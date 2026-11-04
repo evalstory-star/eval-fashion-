@@ -9,6 +9,8 @@ let staffList = [];
 let categories = ['عبايات', 'طرح', 'فساتين', 'ملابس كاجوال'];
 let cart = [];
 let currentCategoryFilter = 'all';
+let currentProductColors = ['أسود', 'بيج', 'أبيض']; // الألوان الافتراضية للقطعة قيد الإنشاء
+
 let storeSettings = {
     whatsapp: '201108396536',
     fb: 'https://facebook.com',
@@ -26,6 +28,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     renderProducts('all');
     renderCart();
     renderDynamicContent();
+    renderProductColorsTags();
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('admin') === 'eval2026') {
@@ -122,7 +125,6 @@ async function setupDashboard() {
         if(superPanel) superPanel.classList.add('hidden');
     }
 
-    // تحديث إحصائيات لوحة التحكم السريعة
     document.getElementById('stat-products-count').innerText = products.length;
     document.getElementById('stat-reviews-count').innerText = reviews.length;
     document.getElementById('stat-staff-count').innerText = staffList.length || 1;
@@ -230,7 +232,38 @@ function renderDynamicContent() {
     if(document.getElementById('footer-wa')) document.getElementById('footer-wa').href = `https://wa.me/${storeSettings.whatsapp}`;
 }
 
-// عرض نافذة تفاصيل المنتج مع دعم معرض الصور المتعددة وزر المشاركة
+// --- دوال إدارة الألوان الخاصة بالمنتج قيد الإضافة ---
+function addProductColor() {
+    const input = document.getElementById('custom-color-input');
+    const val = input.value.trim();
+    if(val && !currentProductColors.includes(val)) {
+        currentProductColors.push(val);
+        input.value = '';
+        renderProductColorsTags();
+    }
+}
+
+function removeProductColor(color) {
+    currentProductColors = currentProductColors.filter(c => c !== color);
+    renderProductColorsTags();
+}
+
+function renderProductColorsTags() {
+    const container = document.getElementById('product-colors-tags');
+    if(!container) return;
+    if(currentProductColors.length === 0) {
+        container.innerHTML = `<p class="text-xs text-rose-500 font-bold">يجب إضافة لون واحد على الأقل!</p>`;
+        return;
+    }
+    container.innerHTML = currentProductColors.map(c => `
+        <span class="inline-flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl text-xs font-bold text-gray-800 border shadow-sm">
+            ${c}
+            <button type="button" onclick="removeProductColor('${c}')" class="text-rose-500 hover:text-rose-700 ml-1"><i class="fa-solid fa-xmark"></i></button>
+        </span>
+    `).join('');
+}
+
+// عرض نافذة تفاصيل المنتج مع معرض الصور المتعددة وألوان المنتج المحددة
 function openProductDetailModal(pId) {
     const p = products.find(prod => String(prod.id) === String(pId));
     if (!p) return;
@@ -343,6 +376,10 @@ function addConfiguredToCart(pId) {
 
 async function handleProductSubmit(e) {
     e.preventDefault();
+    if(currentProductColors.length === 0) {
+        alert("يرجى إضافة لون واحد على الأقل للقطعة!");
+        return;
+    }
     const saveBtn = document.getElementById('save-btn');
     if(saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = 'جاري رفع الصور والنشر...'; }
     try {
@@ -359,7 +396,6 @@ async function handleProductSubmit(e) {
         }
 
         const selectedSizes = Array.from(document.querySelectorAll('#sizes-selector input:checked')).map(cb => cb.value);
-        const selectedColors = Array.from(document.querySelectorAll('#colors-selector input:checked')).map(cb => cb.value);
 
         const newProduct = {
             name: document.getElementById('p-name').value.trim(),
@@ -368,7 +404,7 @@ async function handleProductSubmit(e) {
             fabric: document.getElementById('p-fabric').value.trim(),
             description: document.getElementById('p-desc').value.trim(),
             sizes: selectedSizes.length > 0 ? selectedSizes : ['Free Size'],
-            colors: selectedColors.length > 0 ? selectedColors : ['أساسي'],
+            colors: [...currentProductColors],
             image_url: uploadedUrls[0],
             images: uploadedUrls,
             is_available: true
@@ -377,6 +413,8 @@ async function handleProductSubmit(e) {
         await _supabase.from('products').insert([newProduct]);
         showToast("تم نشر القطعة بنجاح!");
         document.getElementById('product-form').reset();
+        currentProductColors = ['أسود', 'بيج', 'أبيض'];
+        renderProductColorsTags();
         await fetchProducts();
         renderAdminProductsList();
     } catch (err) { alert("خطأ: " + err.message); }
