@@ -55,11 +55,11 @@
                 <!-- Dynamically rendered -->
             </nav>
 
-            <div class="flex items-center space-x-5 space-x-reverse">
-                <button class="relative text-brand-text hover:text-brand-olive transition">
-                    <i class="fa-solid fa-bag-shopping text-xl"></i>
-                    <span id="cart-count" class="absolute -top-2 -right-2 bg-brand-olive text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
-                </button>
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <a id="header-whatsapp-btn" href="https://wa.me/201000000000" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                    <span class="hidden sm:inline">طلب / تواصل</span>
+                </a>
             </div>
         </div>
 
@@ -78,7 +78,23 @@
                 <span class="text-xs uppercase tracking-widest text-brand-sand font-semibold mb-2 block">تشكيلة الموسم الجديد</span>
                 <h2 class="text-3xl md:text-5xl font-extrabold leading-tight mb-4">الأناقة الهادئة والاحتشام الراقي</h2>
                 <p class="text-brand-beige/90 text-sm md:text-base mb-6">اكتشفي تصاميمنا المصممة بعناية فائقة بأجود أنواع الأقمشة لتناسب جميع أوقاتك.</p>
-                <a href="#products-section" class="bg-brand-sand text-brand-oliveDark px-6 py-3 rounded-xl font-bold hover:bg-white transition shadow-md">استكشفي المجموعات</a>
+                <div class="flex flex-wrap gap-3">
+                    <a href="#products-section" class="bg-brand-sand text-brand-oliveDark px-6 py-3 rounded-xl font-bold hover:bg-white transition shadow-md">استكشفي المجموعات</a>
+                    <a id="hero-whatsapp-btn" href="https://wa.me/201000000000" target="_blank" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition shadow-md flex items-center gap-2">
+                        <i class="fa-brands fa-whatsapp"></i> تواصل وحجز سريع
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Payment Methods Banner -->
+        <section class="mb-10 bg-white p-4 rounded-2xl border border-brand-sand/30 shadow-sm flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-2 text-brand-olive font-bold text-sm">
+                <i class="fa-solid fa-shield-heart text-brand-accent text-lg"></i>
+                <span>طرق الدفع المتاحة:</span>
+            </div>
+            <div id="payment-methods-badges" class="flex flex-wrap items-center gap-2">
+                <!-- Dynamically rendered payment badges -->
             </div>
         </section>
 
@@ -130,9 +146,11 @@
                     </div>
                 </div>
 
-                <button class="w-full bg-brand-olive text-white py-3 rounded-xl font-bold mt-6 hover:bg-brand-oliveDark transition shadow">
-                    إضافة إلى السلة
-                </button>
+                <div class="mt-6 space-y-2">
+                    <a id="modal-order-whatsapp" href="#" target="_blank" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition shadow flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-lg"></i> حجز عبر الواتساب مباشرة
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -172,12 +190,52 @@
                         <h2 class="text-2xl font-black text-brand-olive flex items-center gap-2">
                             <i class="fa-solid fa-sliders text-brand-accent"></i> لوحة الإدارة الشاملة
                         </h2>
-                        <p class="text-xs text-gray-400 mt-0.5">إدارة الأقسام والمنتجات بمرونة كاملة</p>
+                        <p class="text-xs text-gray-400 mt-0.5">إدارة الأقسام، التواصل، وطرق الدفع والمنتجات</p>
                     </div>
                     <button onclick="closeAdminPanel()" class="bg-gray-100 hover:bg-gray-200 text-gray-600 w-10 h-10 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
 
-                <!-- 1. Categories Management Section -->
+                <!-- 1. Store Settings: Contact & Payments -->
+                <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 mb-8">
+                    <h3 class="font-extrabold text-emerald-800 text-sm mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-headset"></i> إعدادات التواصل ورقم الحجز وطرق الدفع
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold mb-1 text-gray-700">رقم الواتساب / الهاتف للحجز (مع رمز الدولة بدون +)</label>
+                            <input type="text" id="admin-store-phone" placeholder="مثال: 201000000000" class="w-full border rounded-xl p-2.5 text-xs outline-none bg-white border-gray-300">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold mb-2 text-gray-700">تفعيل طرق الدفع المتاحة للعملاء:</label>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <label class="flex items-center gap-2 bg-white p-2 rounded-xl border border-gray-200 cursor-pointer">
+                                    <input type="checkbox" id="pay-cod" checked class="accent-brand-olive">
+                                    <span>الدفع عند الاستلام</span>
+                                </label>
+                                <label class="flex items-center gap-2 bg-white p-2 rounded-xl border border-gray-200 cursor-pointer">
+                                    <input type="checkbox" id="pay-instapay" checked class="accent-brand-olive">
+                                    <span>InstaPay / فودافون كاش</span>
+                                </label>
+                                <label class="flex items-center gap-2 bg-white p-2 rounded-xl border border-gray-200 cursor-pointer">
+                                    <input type="checkbox" id="pay-card" checked class="accent-brand-olive">
+                                    <span>بطاقة ائتمانية / Visa</span>
+                                </label>
+                                <label class="flex items-center gap-2 bg-white p-2 rounded-xl border border-gray-200 cursor-pointer">
+                                    <input type="checkbox" id="pay-bank" checked class="accent-brand-olive">
+                                    <span>تحويل بنكي مباشر</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button onclick="saveStoreSettings()" class="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-bold text-xs hover:bg-emerald-700 transition">
+                            حفظ إعدادات التواصل والدفع
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Categories Management Section -->
                 <div class="bg-brand-beige p-5 rounded-2xl border border-brand-sand/40 mb-8">
                     <h3 class="font-extrabold text-brand-olive text-sm mb-3 flex items-center gap-2">
                         <i class="fa-solid fa-layer-group"></i> إدارة الأقسام (إضافة / تعديل / حذف)
@@ -193,7 +251,7 @@
                     </div>
                 </div>
 
-                <!-- 2. Product Add/Edit Form -->
+                <!-- 3. Product Add/Edit Form -->
                 <div class="bg-gray-50 p-6 rounded-2xl border mb-8">
                     <h3 id="form-title" class="font-extrabold text-brand-olive text-base mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-plus-circle"></i> إضافة قطعة جديدة
@@ -292,12 +350,17 @@
     <!-- Logic JavaScript -->
     <script>
         const SUPABASE_URL = 'https://iokpmjyzdbmsmsqgpwth.supabase.co';
-        const SUPABASE_KEY = 'Sb_publishable_8KMV6LpTk2YyBXgnMha-oA_7yv0mK00';
+        
+        // ** المفتاح المحدث والمعالج لضمان عمليات الحفظ والمزامنة السحابية **
+        const SUPABASE_KEY = 'Sb_publishable_WTWKNQtmGdJqFmrxBmQ__g_AQvAvuA1';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const ADMIN_PASSWORD = "eval2026";
 
-        // Default Master Data
+        // Store Dynamic State
+        let storePhone = "201000000000";
+        let paymentSettings = { cod: true, instapay: true, card: true, bank: false };
+
         const AVAILABLE_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
         const AVAILABLE_COLORS = ['أسود', 'أبيض', 'بيج', 'زيتي', 'كشمير', 'كحلي', 'رمادي', 'بني', 'وردي'];
         
@@ -307,10 +370,73 @@
         let logoClickTimer = null;
 
         document.addEventListener('DOMContentLoaded', () => {
+            loadStoreSettings();
             renderSizesCheckboxes();
             renderColorsCheckboxes();
             fetchProducts();
         });
+
+        function loadStoreSettings() {
+            const savedPhone = localStorage.getItem('eval_phone');
+            if (savedPhone) storePhone = savedPhone;
+            
+            const savedPay = localStorage.getItem('eval_pay');
+            if (savedPay) paymentSettings = JSON.parse(savedPay);
+
+            updatePhoneLinks();
+            renderPaymentBadges();
+        }
+
+        function updatePhoneLinks() {
+            const cleanPhone = storePhone.replace(/[^0-9]/g, '');
+            const waUrl = `https://wa.me/${cleanPhone}`;
+            document.getElementById('header-whatsapp-btn').href = waUrl;
+            document.getElementById('hero-whatsapp-btn').href = waUrl;
+            document.getElementById('admin-store-phone').value = storePhone;
+        }
+
+        function renderPaymentBadges() {
+            const container = document.getElementById('payment-methods-badges');
+            container.innerHTML = '';
+
+            if (paymentSettings.cod) {
+                container.innerHTML += `<span class="bg-brand-beige text-brand-olive text-xs font-bold px-3 py-1 rounded-lg border border-brand-sand/40"><i class="fa-solid fa-truck-ramp-box"></i> الدفع عند الاستلام</span>`;
+            }
+            if (paymentSettings.instapay) {
+                container.innerHTML += `<span class="bg-purple-50 text-purple-700 text-xs font-bold px-3 py-1 rounded-lg border border-purple-200"><i class="fa-solid fa-[#00A859]"></i> InstaPay / فودافون كاش</span>`;
+            }
+            if (paymentSettings.card) {
+                container.innerHTML += `<span class="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1 rounded-lg border border-blue-200"><i class="fa-solid fa-credit-card"></i> الفيزا والبطاقات</span>`;
+            }
+            if (paymentSettings.bank) {
+                container.innerHTML += `<span class="bg-gray-100 text-gray-700 text-xs font-bold px-3 py-1 rounded-lg border"><i class="fa-solid fa-building-columns"></i> التحويل البنكي</span>`;
+            }
+
+            // Sync Checkboxes in Admin Panel
+            document.getElementById('pay-cod').checked = paymentSettings.cod;
+            document.getElementById('pay-instapay').checked = paymentSettings.instapay;
+            document.getElementById('pay-card').checked = paymentSettings.card;
+            document.getElementById('pay-bank').checked = paymentSettings.bank;
+        }
+
+        function saveStoreSettings() {
+            const phoneInput = document.getElementById('admin-store-phone').value.trim();
+            if (phoneInput) storePhone = phoneInput;
+
+            paymentSettings = {
+                cod: document.getElementById('pay-cod').checked,
+                instapay: document.getElementById('pay-instapay').checked,
+                card: document.getElementById('pay-card').checked,
+                bank: document.getElementById('pay-bank').checked
+            };
+
+            localStorage.setItem('eval_phone', storePhone);
+            localStorage.setItem('eval_pay', JSON.stringify(paymentSettings));
+
+            updatePhoneLinks();
+            renderPaymentBadges();
+            alert("تم حفظ إعدادات التواصل وطرق الدفع بنجاح!");
+        }
 
         function renderSizesCheckboxes(selected = []) {
             const container = document.getElementById('sizes-checkbox-container');
@@ -382,13 +508,12 @@
             
             if (error) {
                 console.error("Supabase Error:", error);
-                grid.innerHTML = '<div class="col-span-full text-center py-10 text-red-500 font-bold">خطأ في الجلب. تأكد من جدول products.</div>';
+                grid.innerHTML = '<div class="col-span-full text-center py-10 text-red-500 font-bold">حدث خطأ في الجلب. تأكد من جدول products.</div>';
                 return;
             }
 
             productsState = data || [];
             
-            // Sync categories from database products
             const dbCategories = productsState.map(p => p.category).filter(Boolean);
             customCategories = Array.from(new Set([...customCategories, ...dbCategories]));
 
@@ -400,7 +525,6 @@
         function renderCategoriesNav() {
             const categories = ['الكل', ...customCategories];
             
-            // Desktop Navbar
             const desktopNav = document.getElementById('desktop-categories');
             desktopNav.innerHTML = '';
             categories.forEach(cat => {
@@ -412,7 +536,6 @@
                 desktopNav.appendChild(a);
             });
 
-            // Mobile Navbar
             const mobileContainer = document.getElementById('mobile-categories-container');
             mobileContainer.innerHTML = '';
             categories.forEach(cat => {
@@ -450,7 +573,7 @@
                             <p class="text-xs text-gray-400 mt-1 line-clamp-1">${item.fabric || 'أقمشة فاخرة'}</p>
                             <div class="mt-3 flex justify-between items-center">
                                 <span class="font-extrabold text-brand-olive text-lg">$${item.price}</span>
-                                <span class="text-xs text-brand-accent underline font-bold">التفاصيل</span>
+                                <span class="text-xs text-brand-accent underline font-bold">التفاصيل / حجز</span>
                             </div>
                         </div>
                     </div>
@@ -479,6 +602,10 @@
             document.getElementById('modal-fabric').textContent = product.fabric || 'غير محدد';
             document.getElementById('modal-description').textContent = product.description || 'تصميم راقٍ ومتميز من EVAL.';
 
+            const cleanPhone = storePhone.replace(/[^0-9]/g, '');
+            const msg = encodeURIComponent(`مرحباً EVAL، أود الاستفسار وحجز القطعة التالية:\nالاسم: ${product.name}\nالسعر: $${product.price}\nالقسم: ${product.category}`);
+            document.getElementById('modal-order-whatsapp').href = `https://wa.me/${cleanPhone}?text=${msg}`;
+
             const sizesContainer = document.getElementById('modal-sizes');
             sizesContainer.innerHTML = '';
             (product.sizes || []).forEach(s => {
@@ -498,7 +625,6 @@
             document.getElementById('product-modal').classList.add('hidden');
         }
 
-        // Categories Management CRUD Logic
         function handleAddCategory() {
             const input = document.getElementById('new-category-input');
             const catName = input.value.trim();
@@ -528,9 +654,7 @@
             }
         }
 
-        // Render Admin Dashboard Controls
         function renderAdminDashboard() {
-            // Populate Categories Chips
             const catContainer = document.getElementById('categories-management-list');
             catContainer.innerHTML = '';
             customCategories.forEach(cat => {
@@ -543,11 +667,9 @@
                 `;
             });
 
-            // Populate Category Select Input in Form
             const select = document.getElementById('admin-category-select');
             select.innerHTML = customCategories.map(c => `<option value="${c}">${c}</option>`).join('');
 
-            // Populate Products Table
             const tableContainer = document.getElementById('admin-products-table');
             tableContainer.innerHTML = '';
             if (productsState.length === 0) {
@@ -628,11 +750,9 @@
             const fabric = document.getElementById('admin-fabric').value;
             const description = document.getElementById('admin-description').value;
             
-            // Get selected sizes
             const sizeBoxes = document.querySelectorAll('input[name="admin-sizes-check"]:checked');
             const sizes = Array.from(sizeBoxes).map(cb => cb.value);
 
-            // Get selected colors
             const colorBoxes = document.querySelectorAll('input[name="admin-colors-check"]:checked');
             const colors = Array.from(colorBoxes).map(cb => cb.value);
 
