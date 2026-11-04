@@ -22,7 +22,6 @@ let storeSettings = {
 
 window.addEventListener('DOMContentLoaded', async () => {
     loadLocalState();
-    await fetchAnnouncementBar();
     await fetchProducts();
     await fetchReviews();
     renderCategories();
@@ -70,49 +69,6 @@ function loadLocalState() {
     if(document.getElementById('pay-bank')) document.getElementById('pay-bank').checked = storeSettings.payments.bank;
 }
 
-// دوال الشريط العلوي
-async function fetchAnnouncementBar() {
-    try {
-        const { data, error } = await _supabase.from('site_settings').select('is_active, message').eq('id', 1).single();
-        if (error) throw error;
-
-        const barElement = document.getElementById('top-announcement-bar');
-        const textElement = document.getElementById('announcement-text-content');
-        const adminStatus = document.getElementById('admin-bar-status');
-        const adminMsg = document.getElementById('admin-bar-message');
-
-        if (data) {
-            if (adminStatus) adminStatus.checked = data.is_active;
-            if (adminMsg) adminMsg.value = data.message;
-
-            if (barElement && textElement) {
-                if (data.is_active) {
-                    textElement.textContent = data.message;
-                    barElement.style.display = 'flex';
-                } else {
-                    barElement.style.display = 'none';
-                }
-            }
-        }
-    } catch (err) { console.error(err); }
-}
-
-async function saveAnnouncementBarSettings() {
-    if (currentUser?.role !== 'admin') {
-        alert("عذراً، هذه الصلاحية مخصصة للمدير الرئيسي فقط!");
-        return;
-    }
-    const newStatus = document.getElementById('admin-bar-status').checked;
-    const newMessage = document.getElementById('admin-bar-message').value.trim();
-
-    try {
-        const { error } = await _supabase.from('site_settings').update({ is_active: newStatus, message: newMessage }).eq('id', 1);
-        if (error) throw error;
-        showToast("تم تحديث إعدادات الشريط العلوي بنجاح!");
-        await fetchAnnouncementBar();
-    } catch (err) { alert("خطأ: " + err.message); }
-}
-
 function switchTab(tab) {
     ['store', 'cart', 'contact', 'reviews', 'about', 'admin'].forEach(v => {
         const el = document.getElementById(`view-${v}`);
@@ -124,8 +80,15 @@ function switchTab(tab) {
     if(tab === 'reviews') renderReviews();
 }
 
-function openAuthModal() { document.getElementById('auth-modal')?.classList.remove('hidden'); }
-function closeAuthModal() { document.getElementById('auth-modal')?.classList.add('hidden'); }
+function openAuthModal() { 
+    const modal = document.getElementById('auth-modal');
+    if(modal) modal.classList.remove('hidden'); 
+}
+
+function closeAuthModal() { 
+    const modal = document.getElementById('auth-modal');
+    if(modal) modal.classList.add('hidden'); 
+}
 
 async function handleLogin(e) {
     e.preventDefault();
@@ -142,7 +105,7 @@ async function handleLogin(e) {
         const { data } = await _supabase.from('staff_users').select('*').eq('username', user).eq('password', pass).single();
         if (data) {
             if (!data.is_active) { alert("الحساب معطل!"); return; }
-            currentUser = { username: data.username, role: 'staff' }; // تثبيت دور الموظف بدقة
+            currentUser = { username: data.username, role: data.role };
             setupDashboard();
         } else { alert("بيانات الدخول غير صحيحة!"); }
     } catch (err) { alert("بيانات الدخول غير صحيحة!"); }
@@ -152,30 +115,20 @@ async function setupDashboard() {
     closeAuthModal();
     switchTab('admin');
     document.getElementById('admin-welcome-title').innerText = `أهلاً بك، ${currentUser.username}`;
-    document.getElementById('admin-role-badge').innerText = currentUser.role === 'admin' ? 'صلاحية: المدير الرئيسي' : 'صلاحية: موظف (إضافة وتفعيل الملابس فقط)';
+    document.getElementById('admin-role-badge').innerText = currentUser.role === 'admin' ? 'صلاحية: المدير الرئيسي' : 'صلاحية: موظف';
 
     const superPanel = document.getElementById('super-admin-panel');
-    const settingsPanel = document.getElementById('store-settings-panel');
-    const announcementPanel = document.getElementById('admin-announcement-panel'); // لوحة الشريط العلوي
-
-    // التحكم بالصلاحيات واظهار/إخفاء الأقسام بناءً على الدور
     if (currentUser.role === 'admin') {
         if(superPanel) superPanel.classList.remove('hidden');
-        if(settingsPanel) settingsPanel.classList.remove('hidden');
-        if(announcementPanel) announcementPanel.classList.remove('hidden');
         await fetchStaffList();
     } else {
-        // الموظف: إخفاء لوحة إدارة الموظفين، إعدادات المتجر، وإعدادات الشريط العلوي
         if(superPanel) superPanel.classList.add('hidden');
-        if(settingsPanel) settingsPanel.classList.add('hidden');
-        if(announcementPanel) announcementPanel.classList.add('hidden');
     }
 
     document.getElementById('stat-products-count').innerText = products.length;
     document.getElementById('stat-reviews-count').innerText = reviews.length;
     document.getElementById('stat-staff-count').innerText = staffList.length || 1;
 
-    await fetchAnnouncementBar();
     renderAdminCategories();
     renderAdminProductsList();
     await fetchReviews();
@@ -186,7 +139,6 @@ async function setupDashboard() {
 function logoutAdmin() { currentUser = null; switchTab('store'); }
 
 async function fetchStaffList() {
-    if (currentUser?.role !== 'admin') return;
     try {
         const { data } = await _supabase.from('staff_users').select('*').order('created_at', { ascending: false });
         if (data) {
@@ -199,7 +151,6 @@ async function fetchStaffList() {
 
 async function handleCreateStaff(e) {
     e.preventDefault();
-    if (currentUser?.role !== 'admin') { alert("غير مسموح لك!"); return; }
     const user = document.getElementById('staff-user').value.trim();
     const pass = document.getElementById('staff-pass').value.trim();
     try {
@@ -212,13 +163,11 @@ async function handleCreateStaff(e) {
 }
 
 async function toggleStaffStatus(id, currentActive) {
-    if (currentUser?.role !== 'admin') return;
     await _supabase.from('staff_users').update({ is_active: !currentActive }).eq('id', id);
     await fetchStaffList();
 }
 
 async function deleteStaff(id) {
-    if (currentUser?.role !== 'admin') return;
     if (!confirm("هل أنت متأكد من حذف الحساب؟")) return;
     await _supabase.from('staff_users').delete().eq('id', id);
     await fetchStaffList();
@@ -250,7 +199,7 @@ async function fetchProducts() {
             products = data;
             renderProducts(currentCategoryFilter);
         }
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error("Error fetching products:", err); }
 }
 
 async function fetchReviews() {
@@ -270,13 +219,18 @@ function renderDynamicContent() {
     if(aboutDiv) aboutDiv.innerHTML = `<p>${storeSettings.aboutText.replace(/\n/g, '<br>')}</p>`;
     
     const contactDiv = document.getElementById('dynamic-contact-content');
-    if(contactDiv) contactDiv.innerHTML = `
-        <p>${storeSettings.contactText.replace(/\n/g, '<br>')}</p>
-        <div class="pt-4 flex items-center gap-3 text-emerald-800 font-bold">
-            <i class="fa-brands fa-whatsapp text-2xl"></i>
-            <span>رقم الواتساب: ${storeSettings.whatsapp}</span>
-        </div>
-    `;
+    if(contactDiv) {
+        const cleanWa = storeSettings.whatsapp.replace(/[^0-9]/g, '');
+        contactDiv.innerHTML = `
+            <p>${storeSettings.contactText.replace(/\n/g, '<br>')}</p>
+            <div class="pt-4 flex items-center gap-3">
+                <i class="fa-brands fa-whatsapp text-2xl text-emerald-700"></i>
+                <a href="https://wa.me/${cleanWa}?text=${encodeURIComponent('مرحباً EVAL، أود الاستفسار عن منتجاتكم.')}" target="_blank" class="text-emerald-800 font-bold hover:underline text-lg">
+                    رقم الواتساب: ${storeSettings.whatsapp}
+                </a>
+            </div>
+        `;
+    }
     
     if(document.getElementById('footer-fb')) document.getElementById('footer-fb').href = storeSettings.fb;
     if(document.getElementById('footer-ig')) document.getElementById('footer-ig').href = storeSettings.ig;
@@ -356,7 +310,7 @@ function openProductDetailModal(pId) {
                     <p class="text-emerald-800 font-black text-2xl mt-1">${p.price} ج.م</p>
                 </div>
                 ${p.fabric ? `<p class="text-xs font-bold text-gray-500">الخامة المصنعة: <span class="text-gray-900">${p.fabric}</span></p>` : ''}
-                <p class="text-sm text-gray-600 leading-relaxed">${p.description || 'تصميم حصري من متجر EVAL.'}</p>
+                <p class="text-sm text-gray-600 leading-relaxed">${p.description || 'تصميم حصري من متجر EVAL بأرقى معايير الجودة.'}</p>
                 
                 <div class="space-y-2 border-t pt-3">
                     <label class="block text-xs font-bold text-gray-800">اختر المقاس:</label>
@@ -379,10 +333,14 @@ function openProductDetailModal(pId) {
             </div>
         </div>
     `;
-    document.getElementById('product-detail-modal')?.classList.remove('hidden');
+    const modal = document.getElementById('product-detail-modal');
+    if(modal) modal.classList.remove('hidden');
 }
 
-function closeProductDetailModal() { document.getElementById('product-detail-modal')?.classList.add('hidden'); }
+function closeProductDetailModal() { 
+    const modal = document.getElementById('product-detail-modal');
+    if(modal) modal.classList.add('hidden'); 
+}
 
 function shareProduct(name, price) {
     const text = `تأملي هذا التصميم الراقي من متجر EVAL: ${name} بسعر ${price} ج.م. تصفحيه الآن!`;
@@ -402,22 +360,23 @@ function addConfiguredToCart(pId) {
     const selectedColor = document.querySelector('input[name="modal_selected_color"]:checked')?.value || 'أساسي';
     const imagesArr = (p.images && p.images.length) ? p.images : [p.image_url];
 
-    cart.push({
+    const cartItem = {
         id: p.id,
         name: p.name,
         price: p.price,
         image_url: imagesArr[0],
         size: selectedSize,
         color: selectedColor
-    });
+    };
+
+    cart.push(cartItem);
     localStorage.setItem('eval_cart', JSON.stringify(cart));
     updateCartBadge();
     renderCart();
     closeProductDetailModal();
-    showToast(`تم إضافة ${p.name} للسلة!`);
+    showToast(`تم إضافة ${p.name} (مقاس: ${selectedSize} - لون: ${selectedColor}) للسلة!`);
 }
 
-// الموظف والمدير يمكنهما إضافة القطع
 async function handleProductSubmit(e) {
     e.preventDefault();
     if(currentProductColors.length === 0) {
@@ -428,7 +387,7 @@ async function handleProductSubmit(e) {
     if(saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = 'جاري رفع الصور والنشر...'; }
     try {
         const fileInput = document.getElementById('p-images');
-        if (!fileInput || fileInput.files.length === 0) throw new Error("يرجى اختيار صورة واحدة على الأقل");
+        if (!fileInput || fileInput.files.length === 0) throw new Error("يرجى اختيار صورة واحدة على الأقل للقطعة");
         
         let uploadedUrls = [];
         for (let i = 0; i < fileInput.files.length; i++) {
@@ -467,19 +426,13 @@ async function handleProductSubmit(e) {
     }
 }
 
-// الموظف والمدير يمكنهما تفعيل أو إيقاف توفر القطعة
 async function toggleProductAvailability(id, currentStatus) {
     await _supabase.from('products').update({ is_available: !currentStatus }).eq('id', id);
     await fetchProducts(); 
     renderAdminProductsList();
 }
 
-// حذف المنتج: مخصص للمدير فقط
 async function deleteProduct(id) {
-    if (currentUser?.role !== 'admin') {
-        alert("عذراً، حذف المنتجات مخصص للمدير الرئيسي فقط!");
-        return;
-    }
     if (!confirm("هل أنت متأكد من الحذف؟")) return;
     await _supabase.from('products').delete().eq('id', id);
     await fetchProducts(); 
@@ -499,26 +452,24 @@ async function submitReview(e) {
         document.getElementById('review-name').value = '';
         document.getElementById('review-text').value = '';
         await fetchReviews();
-    } catch (err) { alert("خطأ: " + err.message); }
+    } catch (err) {
+        alert("حدث خطأ أثناء نشر التقييم: " + err.message);
+    }
 }
 
 async function deleteReview(id) {
-    if (currentUser?.role !== 'admin') {
-        alert("عذراً، إدارة التعليقات مخصصة للمدير الرئيسي فقط!");
-        return;
+    if (!confirm("هل أنت متأكد من حذف هذا التعليق؟")) return;
+    try {
+        await _supabase.from('reviews').delete().eq('id', id);
+        showToast("تم حذف التعليق بنجاح");
+        await fetchReviews();
+    } catch (err) {
+        alert("خطأ أثناء الحذف: " + err.message);
     }
-    if (!confirm("هل أنت متأكد من الحذف؟")) return;
-    await _supabase.from('reviews').delete().eq('id', id);
-    showToast("تم حذف التعليق");
-    await fetchReviews();
 }
 
 function handleAddCategory(e) {
     e.preventDefault();
-    if (currentUser?.role !== 'admin') {
-        alert("إضافة الأقسام مخصصة للمدير الرئيسي فقط!");
-        return;
-    }
     const input = document.getElementById('new-category-name');
     if(!input) return;
     const val = input.value.trim();
@@ -528,17 +479,13 @@ function handleAddCategory(e) {
         input.value = '';
         renderCategories();
         renderAdminCategories();
-        showToast("تم إضافة القسم!");
+        showToast("تم إضافة القسم بنجاح!");
     }
 }
 
 function deleteCategory(cat) {
-    if (currentUser?.role !== 'admin') {
-        alert("حذف الأقسام مخصص للمدير الرئيسي فقط!");
-        return;
-    }
-    if(categories.length <= 1) { alert("يجب بقاء قسم واحد على الأقل!"); return; }
-    if(!confirm(`حذف قسم "${cat}"؟`)) return;
+    if(categories.length <= 1) { alert("يجب أن يبقى قسم واحد على الأقل!"); return; }
+    if(!confirm(`هل أنت متأكد من حذف قسم "${cat}"؟`)) return;
     categories = categories.filter(c => c !== cat);
     localStorage.setItem('eval_categories', JSON.stringify(categories));
     renderCategories();
@@ -547,10 +494,6 @@ function deleteCategory(cat) {
 }
 
 function saveStoreSettings() {
-    if (currentUser?.role !== 'admin') {
-        alert("حفظ إعدادات المتجر مخصص للمدير الرئيسي فقط!");
-        return;
-    }
     storeSettings.whatsapp = document.getElementById('admin-whatsapp').value.trim();
     storeSettings.fb = document.getElementById('admin-fb').value.trim();
     storeSettings.ig = document.getElementById('admin-ig').value.trim();
@@ -573,7 +516,7 @@ function renderCategories() {
     if(container) {
         container.innerHTML = `<button onclick="filterByCategory('all')" class="cat-btn active px-5 py-2.5 rounded-xl text-sm font-bold bg-gray-900 text-white whitespace-nowrap shadow-sm shrink-0">الكل</button>`;
         categories.forEach(c => {
-            container.innerHTML += `<button onclick="filterByCategory('${c}')" class="cat-btn px-5 py-2.5 rounded-xl text-sm font-bold bg-white text-gray-600 hover:bg-gray-100 border shadow-sm whitespace-nowrap shrink-0">${c}</button>`;
+            container.innerHTML += `<button onclick="filterByCategory('${c}')" class="cat-btn px-5 py-2.5 rounded-xl text-sm font-bold bg-white text-gray-600 hover:bg-gray-100 border border-gray-100 shadow-sm whitespace-nowrap shrink-0">${c}</button>`;
         });
     }
     if(select) {
@@ -587,7 +530,7 @@ function renderAdminCategories() {
     container.innerHTML = categories.map(c => `
         <span class="inline-flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 border">
             ${c}
-            ${currentUser?.role === 'admin' ? `<button onclick="deleteCategory('${c}')" class="text-rose-600 ml-1"><i class="fa-solid fa-xmark"></i></button>` : ''}
+            <button onclick="deleteCategory('${c}')" class="text-rose-600 hover:text-rose-800 ml-1"><i class="fa-solid fa-xmark"></i></button>
         </span>
     `).join('');
 }
@@ -601,17 +544,24 @@ function filterByCategory(cat) {
     renderProducts(cat);
 }
 
-function handleSortChange() { renderProducts(currentCategoryFilter); }
+function handleSortChange() {
+    renderProducts(currentCategoryFilter);
+}
 
 function renderProducts(filter = 'all') {
     const grid = document.getElementById('products-grid');
     if(!grid) return;
     
     let items = filter === 'all' ? [...products] : products.filter(p => p.category === filter);
+    
     const sortVal = document.getElementById('sort-select')?.value || 'newest';
-    if (sortVal === 'newest') items.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-    else if (sortVal === 'price-asc') items.sort((a, b) => Number(a.price) - Number(b.price));
-    else if (sortVal === 'price-desc') items.sort((a, b) => Number(b.price) - Number(a.price));
+    if (sortVal === 'newest') {
+        items.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    } else if (sortVal === 'price-asc') {
+        items.sort((a, b) => Number(a.price) - Number(b.price));
+    } else if (sortVal === 'price-desc') {
+        items.sort((a, b) => Number(b.price) - Number(a.price));
+    }
 
     if (items.length === 0) {
         grid.innerHTML = `<div class="col-span-full text-center py-16 text-gray-400 font-bold">لا توجد منتجات متوفرة حالياً.</div>`;
@@ -641,17 +591,21 @@ function renderProducts(filter = 'all') {
 function renderReviews() {
     const list = document.getElementById('reviews-list');
     if(!list) return;
-    if(reviews.length === 0) { list.innerHTML = `<p class="text-sm text-gray-400">لا توجد تقييمات حتى الآن.</p>`; return; }
+    if(reviews.length === 0) { list.innerHTML = `<p class="text-sm text-gray-400">لا توجد تقييمات أو تعليقات حتى الآن.</p>`; return; }
     
-    list.innerHTML = reviews.map(r => `
-        <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-1">
-            <div class="flex items-center justify-between">
-                <h4 class="font-bold text-sm text-gray-900">${r.name}</h4>
-                <span class="text-xs text-amber-500">${'⭐'.repeat(r.rating || 5)}</span>
+    list.innerHTML = reviews.map(r => {
+        const ratingNum = r.rating || 5;
+        const stars = '⭐'.repeat(ratingNum);
+        return `
+            <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-1">
+                <div class="flex items-center justify-between">
+                    <h4 class="font-bold text-sm text-gray-900">${r.name}</h4>
+                    <span class="text-xs text-amber-500">${stars}</span>
+                </div>
+                <p class="text-xs text-gray-600">${r.comment}</p>
             </div>
-            <p class="text-xs text-gray-600">${r.comment}</p>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function renderAdminProductsList() {
@@ -665,7 +619,7 @@ function renderAdminProductsList() {
             </div>
             <div class="flex items-center gap-2">
                 <button onclick="toggleProductAvailability(${p.id}, ${p.is_available !== false})" class="px-3 py-1.5 rounded-xl text-xs font-bold ${p.is_available !== false ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-800'}">${p.is_available !== false ? 'إيقاف' : 'تفعيل'}</button>
-                ${currentUser?.role === 'admin' ? `<button onclick="deleteProduct(${p.id})" class="p-2 text-rose-600"><i class="fa-solid fa-trash"></i></button>` : ''}
+                <button onclick="deleteProduct(${p.id})" class="p-2 text-rose-600"><i class="fa-solid fa-trash"></i></button>
             </div>
         </div>
     `).join('');
@@ -674,14 +628,17 @@ function renderAdminProductsList() {
 function renderAdminReviewsList() {
     const container = document.getElementById('admin-reviews-list');
     if(!container) return;
-    if (reviews.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 py-3">لا توجد تعليقات.</p>`; return; }
+    if (reviews.length === 0) {
+        container.innerHTML = `<p class="text-xs text-gray-400 py-3">لا توجد تعليقات مراقبة حالياً.</p>`;
+        return;
+    }
     container.innerHTML = reviews.map(r => `
         <div class="py-3 flex items-center justify-between gap-4">
             <div>
                 <h4 class="font-bold text-sm text-gray-900">${r.name} <span class="text-xs text-amber-500">(${r.rating || 5}⭐)</span></h4>
                 <p class="text-xs text-gray-600">${r.comment}</p>
             </div>
-            ${currentUser?.role === 'admin' ? `<button onclick="deleteReview(${r.id})" class="px-3 py-1.5 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold">حذف</button>` : ''}
+            <button onclick="deleteReview(${r.id})" class="px-3 py-1.5 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold">حذف التعليق</button>
         </div>
     `).join('');
 }
@@ -733,6 +690,9 @@ function renderCart() {
 
     let payHTML = '';
     if(storeSettings.payments.cod) payHTML += `<label class="flex items-center gap-2 p-3 bg-gray-50 border rounded-xl cursor-pointer"><input type="radio" name="pay_method" value="الدفع عند الاستلام" checked> الدفع عند الاستلام</label>`;
+    if(storeSettings.payments.instapay) payHTML += `<label class="flex items-center gap-2 p-3 bg-gray-50 border rounded-xl cursor-pointer"><input type="radio" name="pay_method" value="Instapay / فودافون كاش"> InstaPay / فودافون كاش</label>`;
+    if(storeSettings.payments.visa) payHTML += `<label class="flex items-center gap-2 p-3 bg-gray-50 border rounded-xl cursor-pointer"><input type="radio" name="pay_method" value="بطاقة ائتمانية / Visa"> Visa / Master</label>`;
+    if(storeSettings.payments.bank) payHTML += `<label class="flex items-center gap-2 p-3 bg-gray-50 border rounded-xl cursor-pointer"><input type="radio" name="pay_method" value="تحويل بنكي مباشر"> تحويل بنكي مباشر</label>`;
     if(payContainer) payContainer.innerHTML = payHTML;
 }
 
@@ -748,9 +708,15 @@ function checkoutWhatsApp() {
     let msg = `مرحباً EVAL، أود تأكيد الطلب التفصيلي التالي:\n\n`;
     let total = 0;
     cart.forEach((item, i) => {
-        msg += `📌 قطعة (${i + 1}): ${item.name} | السعر: ${item.price} ج.م | المقاس: ${item.size} | اللون: ${item.color}\n`;
+        msg += `📌 قطعة رقم (${i + 1}): ${item.name}\n`;
+        msg += `   - السعر: ${item.price} ج.م\n`;
+        msg += `   - المقاس المختار: ${item.size || 'Free Size'}\n`;
+        msg += `   - اللون المختار: ${item.color || 'أساسي'}\n\n`;
         total += Number(item.price);
     });
-    msg += `💰 الإجمالي: ${total} ج.م`;
-    window.open(`https://wa.me/${storeSettings.whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+    msg += `💳 طريقة الدفع: ${selectedPay}\n`;
+    msg += `💰 إجمالي المبلغ: ${total} ج.م`;
+
+    const cleanPhone = storeSettings.whatsapp.replace(/[^0-9]/g, '');
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
 }
