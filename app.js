@@ -22,6 +22,7 @@ let storeSettings = {
 
 window.addEventListener('DOMContentLoaded', async () => {
     loadLocalState();
+    await fetchAnnouncementBar(); // جلب إعدادات الشريط العلوي عند التحميل
     await fetchProducts();
     await fetchReviews();
     renderCategories();
@@ -67,6 +68,58 @@ function loadLocalState() {
     if(document.getElementById('pay-instapay')) document.getElementById('pay-instapay').checked = storeSettings.payments.instapay;
     if(document.getElementById('pay-visa')) document.getElementById('pay-visa').checked = storeSettings.payments.visa;
     if(document.getElementById('pay-bank')) document.getElementById('pay-bank').checked = storeSettings.payments.bank;
+}
+
+// --- دوال الشريط العلوي الديناميكي من Supabase ---
+async function fetchAnnouncementBar() {
+    try {
+        const { data, error } = await _supabase
+            .from('site_settings')
+            .select('is_active, message')
+            .eq('id', 1)
+            .single();
+
+        if (error) throw error;
+
+        const barElement = document.getElementById('top-announcement-bar');
+        const textElement = document.getElementById('announcement-text-content');
+        const adminStatus = document.getElementById('admin-bar-status');
+        const adminMsg = document.getElementById('admin-bar-message');
+
+        if (data) {
+            if (adminStatus) adminStatus.checked = data.is_active;
+            if (adminMsg) adminMsg.value = data.message;
+
+            if (barElement && textElement) {
+                if (data.is_active) {
+                    textElement.textContent = data.message;
+                    barElement.style.display = 'flex';
+                } else {
+                    barElement.style.display = 'none';
+                }
+            }
+        }
+    } catch (err) {
+        console.error('خطأ في جلب بيانات الشريط العلوي:', err);
+    }
+}
+
+async function saveAnnouncementBarSettings() {
+    const newStatus = document.getElementById('admin-bar-status').checked;
+    const newMessage = document.getElementById('admin-bar-message').value.trim();
+
+    try {
+        const { error } = await _supabase
+            .from('site_settings')
+            .update({ is_active: newStatus, message: newMessage })
+            .eq('id', 1);
+
+        if (error) throw error;
+        showToast("تم تحديث إعدادات الشريط العلوي بنجاح!");
+        await fetchAnnouncementBar();
+    } catch (err) {
+        alert("حدث خطأ أثناء حفظ إعدادات الشريط: " + err.message);
+    }
 }
 
 function switchTab(tab) {
@@ -129,6 +182,7 @@ async function setupDashboard() {
     document.getElementById('stat-reviews-count').innerText = reviews.length;
     document.getElementById('stat-staff-count').innerText = staffList.length || 1;
 
+    await fetchAnnouncementBar(); // تحديث حقول الشريط العلوي في لوحة التحكم
     renderAdminCategories();
     renderAdminProductsList();
     await fetchReviews();
