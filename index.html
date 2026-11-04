@@ -155,7 +155,7 @@
         </div>
     </div>
 
-    <!-- Admin Password Modal -->
+    <!-- Admin Authentication Modal (Username & Password) -->
     <div id="admin-auth-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative border border-brand-sand/30">
             <button onclick="closeAdminAuthModal()" class="absolute top-4 left-4 text-gray-400 hover:text-black"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -164,15 +164,19 @@
                     <i class="fa-solid fa-shield-halved"></i>
                 </div>
                 <h3 class="text-xl font-extrabold text-brand-olive">تسجيل دخول المسؤول</h3>
-                <p class="text-xs text-gray-400 mt-1">أدخل كلمة المرور للوصول إلى لوحة الإدارة</p>
+                <p class="text-xs text-gray-400 mt-1">أدخل اسم المستخدم وكلمة المرور للوصول</p>
             </div>
 
-            <form onsubmit="verifyAdminPassword(event)" class="space-y-4">
+            <form onsubmit="verifyAdminCredentials(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-gray-700">اسم المستخدم</label>
+                    <input type="text" id="admin-user-input" required class="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-brand-olive outline-none border-gray-300">
+                </div>
                 <div>
                     <label class="block text-xs font-bold mb-1 text-gray-700">كلمة المرور</label>
                     <input type="password" id="admin-pass-input" required class="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-brand-olive outline-none border-gray-300">
                 </div>
-                <p id="auth-error-msg" class="text-xs text-red-500 hidden text-center font-bold">كلمة المرور غير صحيحة!</p>
+                <p id="auth-error-msg" class="text-xs text-red-500 hidden text-center font-bold">اسم المستخدم أو كلمة المرور غير صحيحة!</p>
                 <button type="submit" class="w-full bg-brand-olive text-white py-3 rounded-xl font-bold hover:bg-brand-oliveDark transition shadow">
                     الدخول للوحة التحكم
                 </button>
@@ -350,14 +354,13 @@
     <!-- Logic JavaScript -->
     <script>
         const SUPABASE_URL = 'https://iokpmjyzdbmsmsqgpwth.supabase.co';
-        
-        // ** المفتاح المحدث والمعالج لضمان عمليات الحفظ والمزامنة السحابية **
         const SUPABASE_KEY = 'Sb_publishable_WTWKNQtmGdJqFmrxBmQ__g_AQvAvuA1';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const ADMIN_PASSWORD = "eval2026";
+        // ** بيانات حساب المسؤول المحدثة بناءً على طلبك **
+        const ADMIN_USERNAME = "ibrahim";
+        const ADMIN_PASSWORD = "5528332$777262&eval";
 
-        // Store Dynamic State
         let storePhone = "201000000000";
         let paymentSettings = { cod: true, instapay: true, card: true, bank: false };
 
@@ -403,7 +406,7 @@
                 container.innerHTML += `<span class="bg-brand-beige text-brand-olive text-xs font-bold px-3 py-1 rounded-lg border border-brand-sand/40"><i class="fa-solid fa-truck-ramp-box"></i> الدفع عند الاستلام</span>`;
             }
             if (paymentSettings.instapay) {
-                container.innerHTML += `<span class="bg-purple-50 text-purple-700 text-xs font-bold px-3 py-1 rounded-lg border border-purple-200"><i class="fa-solid fa-[#00A859]"></i> InstaPay / فودافون كاش</span>`;
+                container.innerHTML += `<span class="bg-purple-50 text-purple-700 text-xs font-bold px-3 py-1 rounded-lg border border-purple-200"><i class="fa-solid fa-mobile-screen"></i> InstaPay / فودافون كاش</span>`;
             }
             if (paymentSettings.card) {
                 container.innerHTML += `<span class="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1 rounded-lg border border-blue-200"><i class="fa-solid fa-credit-card"></i> الفيزا والبطاقات</span>`;
@@ -412,7 +415,6 @@
                 container.innerHTML += `<span class="bg-gray-100 text-gray-700 text-xs font-bold px-3 py-1 rounded-lg border"><i class="fa-solid fa-building-columns"></i> التحويل البنكي</span>`;
             }
 
-            // Sync Checkboxes in Admin Panel
             document.getElementById('pay-cod').checked = paymentSettings.cod;
             document.getElementById('pay-instapay').checked = paymentSettings.instapay;
             document.getElementById('pay-card').checked = paymentSettings.card;
@@ -481,12 +483,16 @@
         function closeAdminAuthModal() {
             document.getElementById('admin-auth-modal').classList.add('hidden');
             document.getElementById('auth-error-msg').classList.add('hidden');
+            document.getElementById('admin-user-input').value = '';
             document.getElementById('admin-pass-input').value = '';
         }
 
-        function verifyAdminPassword(e) {
+        function verifyAdminCredentials(e) {
             e.preventDefault();
-            if (document.getElementById('admin-pass-input').value === ADMIN_PASSWORD) {
+            const inputUser = document.getElementById('admin-user-input').value.trim();
+            const inputPass = document.getElementById('admin-pass-input').value;
+
+            if (inputUser === ADMIN_USERNAME && inputPass === ADMIN_PASSWORD) {
                 closeAdminAuthModal();
                 document.getElementById('admin-panel').classList.remove('hidden');
                 renderAdminDashboard();
@@ -508,7 +514,7 @@
             
             if (error) {
                 console.error("Supabase Error:", error);
-                grid.innerHTML = '<div class="col-span-full text-center py-10 text-red-500 font-bold">حدث خطأ في الجلب. تأكد من جدول products.</div>';
+                grid.innerHTML = '<div class="col-span-full text-center py-10 text-red-500 font-bold">خطأ في الجلب. تأكد من جدول products.</div>';
                 return;
             }
 
