@@ -41,7 +41,7 @@
     <header class="sticky top-0 z-40 glass-nav border-b border-gray-100 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <!-- Brand Logo (Pure Logo, No Double-Click Admin Access) -->
+                <!-- Brand Logo -->
                 <div class="flex items-center gap-3 cursor-pointer select-none" onclick="switchTab('store')">
                     <div class="w-10 h-10 bg-emerald-800 text-white flex items-center justify-center rounded-xl font-bold text-xl shadow-md">E</div>
                     <div>
@@ -87,13 +87,13 @@
             </div>
 
             <!-- Categories Filter -->
-            <div class="flex items-center justify-center gap-2 overflow-x-auto pb-2 scrollbar-none" id="category-filters"></div>
+            <div class="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto px-2 pb-3 pt-1 scrollbar-none" id="category-filters"></div>
 
             <!-- Products Grid -->
             <div id="products-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"></div>
         </section>
 
-        <!-- Interactive Product Modal -->
+        <!-- Product Details Modal -->
         <div id="product-detail-modal" class="fixed inset-0 bg-gray-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-y-auto max-h-[90vh]">
                 <button onclick="closeProductDetailModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-2xl"></i></button>
@@ -162,7 +162,7 @@
                 </button>
             </div>
 
-            <!-- Super Admin Staff Control Panel -->
+            <!-- Super Admin Panel -->
             <div id="super-admin-panel" class="hidden bg-slate-900 text-white rounded-2xl p-6 space-y-6 shadow-md">
                 <h3 class="font-bold text-lg flex items-center gap-2 text-emerald-400">
                     <i class="fa-solid fa-users-gear"></i> إدارة حسابات الموظفين والصلاحيات
@@ -178,6 +178,18 @@
                     <h4 class="text-xs font-bold text-gray-400">قائمة الموظفين:</h4>
                     <div id="staff-users-list" class="divide-y divide-slate-800"></div>
                 </div>
+            </div>
+
+            <!-- Categories Management Panel -->
+            <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-4">
+                <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-tags text-emerald-700"></i> إدارة أقسام المتجر (إضافة وحذف)
+                </h3>
+                <form onsubmit="handleAddCategory(event)" class="flex gap-2">
+                    <input type="text" id="new-category-name" required placeholder="اسم القسم الجديد (مثال: حقائب، أحذية...)" class="flex-grow p-3 border rounded-xl text-sm">
+                    <button type="submit" class="px-6 py-3 bg-emerald-800 text-white font-bold rounded-xl hover:bg-emerald-900 text-sm">إضافة قسم</button>
+                </form>
+                <div id="admin-cat-list" class="flex flex-wrap gap-2 pt-2"></div>
             </div>
 
             <!-- Store Settings -->
@@ -221,7 +233,7 @@
                 <button onclick="saveStoreSettings()" class="px-6 py-2.5 bg-emerald-800 text-white font-bold text-sm rounded-xl hover:bg-emerald-900 shadow-sm">حفظ التعديلات</button>
             </div>
 
-            <!-- Add Product Form with Sizes & Colors -->
+            <!-- Add Product Form -->
             <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-6">
                 <h3 class="font-bold text-gray-800 text-base">إضافة قطعة جديدة للمتجر</h3>
                 <form id="product-form" onsubmit="handleProductSubmit(event)" class="space-y-4">
@@ -237,28 +249,28 @@
 
                     <!-- Sizes Selector -->
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">حدد المقاسات المتاحة للقطعة:</label>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">المقاسات المتاحة:</label>
                         <div class="flex flex-wrap gap-2 text-xs font-bold" id="sizes-selector">
-                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer bg-gray-50"><input type="checkbox" value="XS"> XS</label>
-                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer bg-gray-50"><input type="checkbox" value="S"> S</label>
-                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer bg-gray-50"><input type="checkbox" value="M"> M</label>
-                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer bg-gray-50"><input type="checkbox" value="L" checked> L</label>
-                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer bg-gray-50"><input type="checkbox" value="XL"> XL</label>
-                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer bg-gray-50"><input type="checkbox" value="XXL"> XXL</label>
-                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer bg-gray-50"><input type="checkbox" value="Free Size"> Free Size</label>
+                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="XS"> XS</label>
+                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="S"> S</label>
+                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="M"> M</label>
+                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="L" checked> L</label>
+                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="XL"> XL</label>
+                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="XXL"> XXL</label>
+                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="Free Size"> Free Size</label>
                         </div>
                     </div>
 
                     <!-- Colors Selector -->
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">حدد الألوان المتاحة للقطعة:</label>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">الألوان المتاحة:</label>
                         <div class="flex flex-wrap gap-2 text-xs font-bold" id="colors-selector">
-                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer bg-gray-50"><input type="checkbox" value="أسود" checked> أسود</label>
-                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer bg-gray-50"><input type="checkbox" value="أبيض"> أبيض</label>
-                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer bg-gray-50"><input type="checkbox" value="بيج"> بيج</label>
-                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer bg-gray-50"><input type="checkbox" value="زيتي"> زيتي</label>
-                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer bg-gray-50"><input type="checkbox" value="كشمير"> كشمير</label>
-                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer bg-gray-50"><input type="checkbox" value="كحلي"> كحلي</label>
+                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="أسود" checked> أسود</label>
+                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="أبيض"> أبيض</label>
+                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="بيج"> بيج</label>
+                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="زيتي"> زيتي</label>
+                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="كشمير"> كشمير</label>
+                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="كحلي"> كحلي</label>
                         </div>
                     </div>
 
@@ -294,14 +306,14 @@
         </div>
     </footer>
 
-    <!-- Auth Modal (Secret via ?admin=eval2026) -->
+    <!-- Auth Modal -->
     <div id="auth-modal" class="fixed inset-0 bg-gray-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full space-y-6 shadow-2xl relative">
             <button onclick="closeAuthModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             <div class="text-center space-y-2">
                 <div class="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center mx-auto text-xl font-bold"><i class="fa-solid fa-user-shield"></i></div>
                 <h3 class="text-xl font-bold text-gray-900">تسجيل الدخول للنظام</h3>
-                <p class="text-xs text-gray-500">حساب المدير الرئيسي أو الموظفين</p>
+                <p class="text-xs text-gray-500">حساب المدير أو الموظفين</p>
             </div>
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <input type="text" id="login-user" required class="w-full p-3 border rounded-xl text-sm" placeholder="اسم المستخدم">
@@ -311,7 +323,7 @@
         </div>
     </div>
 
-    <!-- External Script Import -->
+    <!-- External Script -->
     <script src="app.js"></script>
 </body>
 </html>
