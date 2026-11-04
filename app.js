@@ -100,7 +100,6 @@ async function setupDashboard() {
 
     if (currentUser.role === 'admin') {
         document.getElementById('super-admin-panel').classList.remove('hidden');
-        document.getElementById('store-settings-panel').classList.add('hidden'); // Simplified view or kept
         await fetchStaffList();
     } else {
         document.getElementById('super-admin-panel').classList.add('hidden');
@@ -108,7 +107,7 @@ async function setupDashboard() {
 
     renderAdminCategories();
     renderAdminProductsList();
-    renderAdminReviewsList();
+    await fetchReviews(); // جلب التعليقات وتحديثها فور فتح اللوحة
     document.getElementById('login-user').value = '';
     document.getElementById('login-pass').value = '';
 }
@@ -174,7 +173,11 @@ async function fetchProducts() {
 async function fetchReviews() {
     try {
         const { data } = await _supabase.from('reviews').select('*').order('created_at', { ascending: false });
-        if (data) reviews = data;
+        if (data) {
+            reviews = data;
+            renderReviews();
+            renderAdminReviewsList();
+        }
     } catch (err) { console.error(err); }
 }
 
@@ -324,16 +327,28 @@ async function submitReview(e) {
     e.preventDefault();
     const name = document.getElementById('review-name').value.trim();
     const comment = document.getElementById('review-text').value.trim();
-    await _supabase.from('reviews').insert([{ name, comment }]);
-    showToast("تم نشر تعليقك بنجاح!");
-    document.getElementById('review-name').value = '';
-    document.getElementById('review-text').value = '';
-    await fetchReviews(); renderReviews();
+    
+    try {
+        const { error } = await _supabase.from('reviews').insert([{ name, comment }]);
+        if (error) throw error;
+        showToast("تم نشر تعليقك بنجاح!");
+        document.getElementById('review-name').value = '';
+        document.getElementById('review-text').value = '';
+        await fetchReviews();
+    } catch (err) {
+        alert("حدث خطأ أثناء نشر التعليق: " + err.message);
+    }
 }
 
 async function deleteReview(id) {
-    await _supabase.from('reviews').delete().eq('id', id);
-    await fetchReviews(); renderReviews(); renderAdminReviewsList();
+    if (!confirm("هل أنت متأكد من حذف هذا التعليق؟")) return;
+    try {
+        await _supabase.from('reviews').delete().eq('id', id);
+        showToast("تم حذف التعليق بنجاح");
+        await fetchReviews();
+    } catch (err) {
+        alert("خطأ أثناء الحذف: " + err.message);
+    }
 }
 
 function handleAddCategory(e) {
@@ -380,13 +395,15 @@ function renderCategories() {
     const container = document.getElementById('category-filters');
     const select = document.getElementById('p-category');
     
-    container.innerHTML = `<button onclick="filterByCategory('all')" class="cat-btn active px-5 py-2.5 rounded-xl text-sm font-bold bg-gray-900 text-white whitespace-nowrap shadow-sm shrink-0">الكل</button>`;
-    if(select) select.innerHTML = '';
-    
-    categories.forEach(c => {
-        container.innerHTML += `<button onclick="filterByCategory('${c}')" class="cat-btn px-5 py-2.5 rounded-xl text-sm font-bold bg-white text-gray-600 hover:bg-gray-100 border border-gray-100 shadow-sm whitespace-nowrap shrink-0">${c}</button>`;
-        if(select) select.innerHTML += `<option value="${c}">${c}</option>`;
-    });
+    if(container) {
+        container.innerHTML = `<button onclick="filterByCategory('all')" class="cat-btn active px-5 py-2.5 rounded-xl text-sm font-bold bg-gray-900 text-white whitespace-nowrap shadow-sm shrink-0">الكل</button>`;
+        categories.forEach(c => {
+            container.innerHTML += `<button onclick="filterByCategory('${c}')" class="cat-btn px-5 py-2.5 rounded-xl text-sm font-bold bg-white text-gray-600 hover:bg-gray-100 border border-gray-100 shadow-sm whitespace-nowrap shrink-0">${c}</button>`;
+        });
+    }
+    if(select) {
+        select.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join('');
+    }
 }
 
 function renderAdminCategories() {
@@ -402,6 +419,7 @@ function renderAdminCategories() {
 
 function renderProducts(filter = 'all') {
     const grid = document.getElementById('products-grid');
+    if(!grid) return;
     const items = filter === 'all' ? products : products.filter(p => p.category === filter);
     if (items.length === 0) {
         grid.innerHTML = `<div class="col-span-full text-center py-16 text-gray-400 font-bold">لا توجد منتجات متوفرة حالياً.</div>`;
@@ -428,12 +446,15 @@ function renderProducts(filter = 'all') {
 
 function filterByCategory(cat) {
     document.querySelectorAll('.cat-btn').forEach(b => { b.classList.remove('bg-gray-900', 'text-white'); b.classList.add('bg-white', 'text-gray-600'); });
-    event.target.classList.add('bg-gray-900', 'text-white');
+    if(event && event.target) {
+        event.target.classList.add('bg-gray-900', 'text-white');
+    }
     renderProducts(cat);
 }
 
 function renderReviews() {
     const list = document.getElementById('reviews-list');
+    if(!list) return;
     if(reviews.length === 0) { list.innerHTML = `<p class="text-sm text-gray-400">لا توجد تعليقات حتى الآن.</p>`; return; }
     list.innerHTML = reviews.map(r => `
         <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-1">
@@ -444,7 +465,9 @@ function renderReviews() {
 }
 
 function renderAdminProductsList() {
-    document.getElementById('admin-products-list').innerHTML = products.map(p => `
+    const container = document.getElementById('admin-products-list');
+    if(!container) return;
+    container.innerHTML = products.map(p => `
         <div class="py-3 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <img src="${p.image_url}" class="w-12 h-12 rounded-xl object-cover" alt="">
@@ -459,9 +482,18 @@ function renderAdminProductsList() {
 }
 
 function renderAdminReviewsList() {
-    document.getElementById('admin-reviews-list').innerHTML = reviews.map(r => `
+    const container = document.getElementById('admin-reviews-list');
+    if(!container) return;
+    if (reviews.length === 0) {
+        container.innerHTML = `<p class="text-xs text-gray-400 py-3">لا توجد تعليقات مراقبة حالياً.</p>`;
+        return;
+    }
+    container.innerHTML = reviews.map(r => `
         <div class="py-3 flex items-center justify-between gap-4">
-            <div><h4 class="font-bold text-sm text-gray-900">${r.name}</h4><p class="text-xs text-gray-600">${r.comment}</p></div>
+            <div>
+                <h4 class="font-bold text-sm text-gray-900">${r.name}</h4>
+                <p class="text-xs text-gray-600">${r.comment}</p>
+            </div>
             <button onclick="deleteReview(${r.id})" class="px-3 py-1.5 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold">حذف التعليق</button>
         </div>
     `).join('');
@@ -469,6 +501,7 @@ function renderAdminReviewsList() {
 
 function updateCartBadge() {
     const badge = document.getElementById('cart-count');
+    if(!badge) return;
     if (cart.length > 0) { badge.innerText = cart.length; badge.classList.remove('hidden'); }
     else { badge.classList.add('hidden'); }
 }
@@ -478,6 +511,7 @@ function renderCart() {
     const container = document.getElementById('cart-items');
     const summary = document.getElementById('cart-summary');
     const payContainer = document.getElementById('payment-methods-container');
+    if(!container || !summary) return;
 
     if (cart.length === 0) {
         container.innerHTML = `<p class="text-center py-8 text-gray-400 font-bold">السلة فارغة حالياً.</p>`;
@@ -514,7 +548,7 @@ function renderCart() {
     if(storeSettings.payments.instapay) payHTML += `<label class="flex items-center gap-2 p-3 bg-gray-50 border rounded-xl cursor-pointer"><input type="radio" name="pay_method" value="Instapay / فودافون كاش"> InstaPay / فودافون كاش</label>`;
     if(storeSettings.payments.visa) payHTML += `<label class="flex items-center gap-2 p-3 bg-gray-50 border rounded-xl cursor-pointer"><input type="radio" name="pay_method" value="بطاقة ائتمانية / Visa"> Visa / Master</label>`;
     if(storeSettings.payments.bank) payHTML += `<label class="flex items-center gap-2 p-3 bg-gray-50 border rounded-xl cursor-pointer"><input type="radio" name="pay_method" value="تحويل بنكي مباشر"> تحويل بنكي مباشر</label>`;
-    payContainer.innerHTML = payHTML;
+    if(payContainer) payContainer.innerHTML = payHTML;
 }
 
 function removeFromCart(idx) {
@@ -529,7 +563,7 @@ function checkoutWhatsApp() {
     let msg = `مرحباً EVAL، أود تأكيد الطلب التفصيلي التالي:\n\n`;
     let total = 0;
     cart.forEach((item, i) => {
-        msg += `📌 قطعة رقم (${i + 1}): ${item.name}\n`;
+        msg += `📌 قطعة رقم (${i + 1}): `${item.name}\n`;
         msg += `   - السعر: ${item.price} ج.م\n`;
         msg += `   - المقاس المختار: ${item.size || 'Free Size'}\n`;
         msg += `   - اللون المختار: ${item.color || 'أساسي'}\n\n`;
