@@ -12,7 +12,7 @@ let currentCategoryFilter = 'all';
 let currentProductColors = ['أسود', 'بيج', 'أبيض'];
 
 let storeSettings = {
-    announcement: 'صُنعت كل قطعة بكل حب وإتقان لتليق بجمالك سيدتي',
+    announcement: 'أناقة تليق بك',
     whatsapp: '201108396536',
     fb: 'https://facebook.com',
     ig: 'https://instagram.com',
@@ -299,7 +299,15 @@ function openProductDetailModal(pId) {
     const modalContent = document.getElementById('modal-product-content');
     if(!modalContent) return;
     
-    let imagesArr = (p.images && p.images.length) ? p.images : [p.image_url];
+    let imagesArr = [];
+    if (p.images && Array.isArray(p.images) && p.images.length > 0) {
+        imagesArr = p.images;
+    } else if (p.image_url) {
+        imagesArr = [p.image_url];
+    } else {
+        imagesArr = ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=600&auto=format&fit=crop'];
+    }
+    
     const mainImg = imagesArr[0];
 
     const thumbsHTML = imagesArr.map((img, idx) => `
@@ -383,7 +391,8 @@ function addConfiguredToCart(pId) {
 
     const selectedSize = document.querySelector('input[name="modal_selected_size"]:checked')?.value || 'Free Size';
     const selectedColor = document.querySelector('input[name="modal_selected_color"]:checked')?.value || 'أساسي';
-    const imagesArr = (p.images && p.images.length) ? p.images : [p.image_url];
+    
+    let imagesArr = (p.images && p.images.length > 0) ? p.images : [p.image_url];
 
     const cartItem = {
         id: p.id,
@@ -604,7 +613,15 @@ function renderProducts(filter = 'all') {
     
     grid.innerHTML = items.map(p => {
         const avail = p.is_available !== false;
-        let imagesArr = (p.images && p.images.length) ? p.images : [p.image_url];
+        let imagesArr = [];
+        if (p.images && Array.isArray(p.images) && p.images.length > 0) {
+            imagesArr = p.images;
+        } else if (p.image_url) {
+            imagesArr = [p.image_url];
+        } else {
+            imagesArr = ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=600&auto=format&fit=crop'];
+        }
+
         return `
             <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col relative">
                 ${!avail ? '<div class="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center"><span class="bg-gray-900 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow">نفذت الكمية</span></div>' : ''}
@@ -645,18 +662,21 @@ function renderReviews() {
 function renderAdminProductsList() {
     const container = document.getElementById('admin-products-list');
     if(!container) return;
-    container.innerHTML = products.map(p => `
-        <div class="py-3 flex items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <img src="${p.image_url}" class="w-12 h-12 rounded-xl object-cover" alt="">
-                <div><h4 class="font-bold text-sm text-gray-900">${p.name}</h4><p class="text-xs text-gray-500">${p.price} ج.م</p></div>
+    container.innerHTML = products.map(p => {
+        let firstImg = (p.images && p.images.length > 0) ? p.images[0] : p.image_url;
+        return `
+            <div class="py-3 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <img src="${firstImg}" class="w-12 h-12 rounded-xl object-cover" alt="">
+                    <div><h4 class="font-bold text-sm text-gray-900">${p.name}</h4><p class="text-xs text-gray-500">${p.price} ج.م</p></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleProductAvailability(${p.id}, ${p.is_available !== false})" class="px-3 py-1.5 rounded-xl text-xs font-bold ${p.is_available !== false ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-800'}">${p.is_available !== false ? 'إيقاف' : 'تفعيل'}</button>
+                    ${currentUser.role === 'admin' ? `<button onclick="deleteProduct(${p.id})" class="p-2 text-rose-600"><i class="fa-solid fa-trash"></i></button>` : ''}
+                </div>
             </div>
-            <div class="flex items-center gap-2">
-                <button onclick="toggleProductAvailability(${p.id}, ${p.is_available !== false})" class="px-3 py-1.5 rounded-xl text-xs font-bold ${p.is_available !== false ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-800'}">${p.is_available !== false ? 'إيقاف' : 'تفعيل'}</button>
-                ${currentUser.role === 'admin' ? `<button onclick="deleteProduct(${p.id})" class="p-2 text-rose-600"><i class="fa-solid fa-trash"></i></button>` : ''}
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function renderAdminReviewsList() {
