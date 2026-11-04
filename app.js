@@ -132,7 +132,7 @@ async function setupDashboard() {
     } else {
         document.getElementById('admin-role-badge').innerText = 'صلاحية: موظف (إضافة وإدارة توفر المنتجات فقط)';
         if(superPanel) superPanel.classList.add('hidden');
-        if(storeSettingsPanel) storeSettingsPanel.classList.add('hidden');
+        if(storeSettingsPanel) superPanel.classList.add('hidden');
         if(categoriesPanel) categoriesPanel.classList.add('hidden');
     }
 
@@ -292,6 +292,7 @@ function renderProductColorsTags() {
     `).join('');
 }
 
+// دالة عرض تفاصيل المنتج مع دعم معرض الصور المتعددة بشكل كامل
 function openProductDetailModal(pId) {
     const p = products.find(prod => String(prod.id) === String(pId));
     if (!p) return;
@@ -310,8 +311,13 @@ function openProductDetailModal(pId) {
     
     const mainImg = imagesArr[0];
 
+    // توليد الصور المصغرة مع ربط الحدث لتغيير الصورة الرئيسية وتحديد البوردر النشط
     const thumbsHTML = imagesArr.map((img, idx) => `
-        <img src="${img}" onclick="document.getElementById('main-modal-img').src='${img}'" class="w-16 h-16 object-cover rounded-xl border cursor-pointer hover:border-emerald-800 transition-all ${idx === 0 ? 'border-2 border-emerald-800' : ''}" alt="thumb">
+        <img src="${img}" onclick="
+            document.getElementById('main-modal-img').src='${img}';
+            document.querySelectorAll('.modal-thumb').forEach(t => t.classList.remove('border-2', 'border-emerald-800'));
+            this.classList.add('border-2', 'border-emerald-800');
+        " class="modal-thumb w-16 h-16 object-cover rounded-xl border cursor-pointer hover:border-emerald-800 transition-all ${idx === 0 ? 'border-2 border-emerald-800' : ''}" alt="thumb">
     `).join('');
 
     const sizesArr = (p.sizes && p.sizes.length) ? p.sizes : ['Free Size'];
