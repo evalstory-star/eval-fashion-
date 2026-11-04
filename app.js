@@ -26,7 +26,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     renderCart();
     renderDynamicContent();
 
-    // الدخول للوحة الإدارة فقط عند وجود الرمز السري في الرابط
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('admin') === 'eval2026') {
         openAuthModal();
@@ -101,11 +100,10 @@ async function setupDashboard() {
 
     if (currentUser.role === 'admin') {
         document.getElementById('super-admin-panel').classList.remove('hidden');
-        document.getElementById('store-settings-panel').classList.remove('hidden');
+        document.getElementById('store-settings-panel').classList.add('hidden'); // Simplified view or kept
         await fetchStaffList();
     } else {
         document.getElementById('super-admin-panel').classList.add('hidden');
-        document.getElementById('store-settings-panel').classList.add('hidden');
     }
 
     renderAdminCategories();
@@ -194,7 +192,6 @@ function renderDynamicContent() {
     document.getElementById('footer-wa').href = `https://wa.me/${storeSettings.whatsapp}`;
 }
 
-// نافذة عرض تفاصيل المنتج واختيار المقاسات والألوان
 function openProductDetailModal(pId) {
     const p = products.find(prod => String(prod.id) === String(pId));
     if (!p) return;
@@ -339,6 +336,30 @@ async function deleteReview(id) {
     await fetchReviews(); renderReviews(); renderAdminReviewsList();
 }
 
+function handleAddCategory(e) {
+    e.preventDefault();
+    const input = document.getElementById('new-category-name');
+    const val = input.value.trim();
+    if(val && !categories.includes(val)) {
+        categories.push(val);
+        localStorage.setItem('eval_categories', JSON.stringify(categories));
+        input.value = '';
+        renderCategories();
+        renderAdminCategories();
+        showToast("تم إضافة القسم بنجاح!");
+    }
+}
+
+function deleteCategory(cat) {
+    if(categories.length <= 1) { alert("يجب أن يبقى قسم واحد على الأقل!"); return; }
+    if(!confirm(`هل أنت متأكد من حذف قسم "${cat}"؟`)) return;
+    categories = categories.filter(c => c !== cat);
+    localStorage.setItem('eval_categories', JSON.stringify(categories));
+    renderCategories();
+    renderAdminCategories();
+    showToast("تم حذف القسم!");
+}
+
 function saveStoreSettings() {
     storeSettings.whatsapp = document.getElementById('admin-whatsapp').value.trim();
     storeSettings.fb = document.getElementById('admin-fb').value.trim();
@@ -358,17 +379,24 @@ function saveStoreSettings() {
 function renderCategories() {
     const container = document.getElementById('category-filters');
     const select = document.getElementById('p-category');
-    container.innerHTML = `<button onclick="filterByCategory('all')" class="cat-btn active px-6 py-2.5 rounded-xl text-sm font-bold bg-gray-900 text-white whitespace-nowrap shadow-sm">الكل</button>`;
-    select.innerHTML = '';
+    
+    container.innerHTML = `<button onclick="filterByCategory('all')" class="cat-btn active px-5 py-2.5 rounded-xl text-sm font-bold bg-gray-900 text-white whitespace-nowrap shadow-sm shrink-0">الكل</button>`;
+    if(select) select.innerHTML = '';
+    
     categories.forEach(c => {
-        container.innerHTML += `<button onclick="filterByCategory('${c}')" class="cat-btn px-6 py-2.5 rounded-xl text-sm font-bold bg-white text-gray-600 hover:bg-gray-100 border border-gray-100 shadow-sm">${c}</button>`;
-        select.innerHTML += `<option value="${c}">${c}</option>`;
+        container.innerHTML += `<button onclick="filterByCategory('${c}')" class="cat-btn px-5 py-2.5 rounded-xl text-sm font-bold bg-white text-gray-600 hover:bg-gray-100 border border-gray-100 shadow-sm whitespace-nowrap shrink-0">${c}</button>`;
+        if(select) select.innerHTML += `<option value="${c}">${c}</option>`;
     });
 }
 
 function renderAdminCategories() {
-    document.getElementById('admin-cat-list').innerHTML = categories.map(c => `
-        <span class="inline-flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-700">${c}</span>
+    const container = document.getElementById('admin-cat-list');
+    if(!container) return;
+    container.innerHTML = categories.map(c => `
+        <span class="inline-flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 border">
+            ${c}
+            <button onclick="deleteCategory('${c}')" class="text-rose-600 hover:text-rose-800 ml-1"><i class="fa-solid fa-xmark"></i></button>
+        </span>
     `).join('');
 }
 
