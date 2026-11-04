@@ -41,7 +41,7 @@
     <header class="sticky top-0 z-40 glass-nav border-b border-gray-100 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <!-- Brand Logo -->
+                <!-- Brand Logo (Clean & No Double Click Trigger) -->
                 <div class="flex items-center gap-3 cursor-pointer select-none" onclick="switchTab('store')">
                     <div class="w-10 h-10 bg-emerald-800 text-white flex items-center justify-center rounded-xl font-bold text-xl shadow-md">E</div>
                     <div>
@@ -294,7 +294,7 @@
         </div>
     </footer>
 
-    <!-- Auth Modal (Triggered via URL Parameter) -->
+    <!-- Auth Modal (Triggered via URL Parameter only) -->
     <div id="auth-modal" class="fixed inset-0 bg-gray-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full space-y-6 shadow-2xl relative">
             <button onclick="closeAuthModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
@@ -341,7 +341,7 @@
             renderCart();
             renderDynamicContent();
 
-            // Check if URL has secret parameter to open admin login modal automatically
+            // Open admin modal ONLY if secret parameter ?admin=eval2026 is present in URL
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('admin') === 'eval2026') {
                 openAuthModal();
