@@ -12,6 +12,7 @@ let currentCategoryFilter = 'all';
 let currentProductColors = ['أسود', 'بيج', 'أبيض'];
 
 let storeSettings = {
+    announcement: 'صُنعت كل قطعة بكل حب وإتقان لتليق بجمالك سيدتي',
     whatsapp: '201108396536',
     fb: 'https://facebook.com',
     ig: 'https://instagram.com',
@@ -52,6 +53,8 @@ function loadLocalState() {
     const savedCart = localStorage.getItem('eval_cart');
     if (savedCart) cart = JSON.parse(savedCart);
 
+    const annInput = document.getElementById('admin-announcement');
+    if(annInput) annInput.value = storeSettings.announcement || '';
     const waInput = document.getElementById('admin-whatsapp');
     if(waInput) waInput.value = storeSettings.whatsapp;
     const fbInput = document.getElementById('admin-fb');
@@ -105,7 +108,7 @@ async function handleLogin(e) {
         const { data } = await _supabase.from('staff_users').select('*').eq('username', user).eq('password', pass).single();
         if (data) {
             if (!data.is_active) { alert("الحساب معطل!"); return; }
-            currentUser = { username: data.username, role: data.role };
+            currentUser = { username: data.username, role: 'staff' };
             setupDashboard();
         } else { alert("بيانات الدخول غير صحيحة!"); }
     } catch (err) { alert("بيانات الدخول غير صحيحة!"); }
@@ -115,14 +118,22 @@ async function setupDashboard() {
     closeAuthModal();
     switchTab('admin');
     document.getElementById('admin-welcome-title').innerText = `أهلاً بك، ${currentUser.username}`;
-    document.getElementById('admin-role-badge').innerText = currentUser.role === 'admin' ? 'صلاحية: المدير الرئيسي' : 'صلاحية: موظف';
-
+    
     const superPanel = document.getElementById('super-admin-panel');
+    const storeSettingsPanel = document.getElementById('store-settings-panel');
+    const categoriesPanel = document.getElementById('admin-categories-panel');
+
     if (currentUser.role === 'admin') {
+        document.getElementById('admin-role-badge').innerText = 'صلاحية: المدير الرئيسي';
         if(superPanel) superPanel.classList.remove('hidden');
+        if(storeSettingsPanel) storeSettingsPanel.classList.remove('hidden');
+        if(categoriesPanel) categoriesPanel.classList.remove('hidden');
         await fetchStaffList();
     } else {
+        document.getElementById('admin-role-badge').innerText = 'صلاحية: موظف (إضافة وإدارة توفر المنتجات فقط)';
         if(superPanel) superPanel.classList.add('hidden');
+        if(storeSettingsPanel) storeSettingsPanel.classList.add('hidden');
+        if(categoriesPanel) categoriesPanel.classList.add('hidden');
     }
 
     document.getElementById('stat-products-count').innerText = products.length;
@@ -151,6 +162,7 @@ async function fetchStaffList() {
 
 async function handleCreateStaff(e) {
     e.preventDefault();
+    if(currentUser.role !== 'admin') { alert("غير مسموح لك بهذه العملية!"); return; }
     const user = document.getElementById('staff-user').value.trim();
     const pass = document.getElementById('staff-pass').value.trim();
     try {
@@ -163,11 +175,13 @@ async function handleCreateStaff(e) {
 }
 
 async function toggleStaffStatus(id, currentActive) {
+    if(currentUser.role !== 'admin') return;
     await _supabase.from('staff_users').update({ is_active: !currentActive }).eq('id', id);
     await fetchStaffList();
 }
 
 async function deleteStaff(id) {
+    if(currentUser.role !== 'admin') return;
     if (!confirm("هل أنت متأكد من حذف الحساب؟")) return;
     await _supabase.from('staff_users').delete().eq('id', id);
     await fetchStaffList();
@@ -215,6 +229,17 @@ async function fetchReviews() {
 }
 
 function renderDynamicContent() {
+    const bar = document.getElementById('announcement-bar');
+    const barText = document.getElementById('announcement-text');
+    if(bar && barText) {
+        if(storeSettings.announcement && storeSettings.announcement.trim() !== '') {
+            barText.innerText = storeSettings.announcement;
+            bar.classList.remove('hidden');
+        } else {
+            bar.classList.add('hidden');
+        }
+    }
+
     const aboutDiv = document.getElementById('dynamic-about-content');
     if(aboutDiv) aboutDiv.innerHTML = `<p>${storeSettings.aboutText.replace(/\n/g, '<br>')}</p>`;
     
@@ -433,6 +458,10 @@ async function toggleProductAvailability(id, currentStatus) {
 }
 
 async function deleteProduct(id) {
+    if(currentUser.role !== 'admin') {
+        alert("عذراً، حذف المنتجات مقتصر على المدير الرئيسي فقط!");
+        return;
+    }
     if (!confirm("هل أنت متأكد من الحذف؟")) return;
     await _supabase.from('products').delete().eq('id', id);
     await fetchProducts(); 
@@ -458,6 +487,7 @@ async function submitReview(e) {
 }
 
 async function deleteReview(id) {
+    if(currentUser.role !== 'admin') return;
     if (!confirm("هل أنت متأكد من حذف هذا التعليق؟")) return;
     try {
         await _supabase.from('reviews').delete().eq('id', id);
@@ -470,6 +500,7 @@ async function deleteReview(id) {
 
 function handleAddCategory(e) {
     e.preventDefault();
+    if(currentUser.role !== 'admin') return;
     const input = document.getElementById('new-category-name');
     if(!input) return;
     const val = input.value.trim();
@@ -484,6 +515,7 @@ function handleAddCategory(e) {
 }
 
 function deleteCategory(cat) {
+    if(currentUser.role !== 'admin') return;
     if(categories.length <= 1) { alert("يجب أن يبقى قسم واحد على الأقل!"); return; }
     if(!confirm(`هل أنت متأكد من حذف قسم "${cat}"؟`)) return;
     categories = categories.filter(c => c !== cat);
@@ -494,6 +526,8 @@ function deleteCategory(cat) {
 }
 
 function saveStoreSettings() {
+    if(currentUser.role !== 'admin') { alert("عذراً، تعديل إعدادات المتجر مقتصر على المدير الرئيسي فقط!"); return; }
+    storeSettings.announcement = document.getElementById('admin-announcement').value.trim();
     storeSettings.whatsapp = document.getElementById('admin-whatsapp').value.trim();
     storeSettings.fb = document.getElementById('admin-fb').value.trim();
     storeSettings.ig = document.getElementById('admin-ig').value.trim();
@@ -506,7 +540,7 @@ function saveStoreSettings() {
 
     localStorage.setItem('eval_settings', JSON.stringify(storeSettings));
     renderDynamicContent();
-    showToast("تم حفظ الإعدادات بنجاح!");
+    showToast("تم حفظ الإعدادات والشريط بنجاح!");
 }
 
 function renderCategories() {
@@ -530,7 +564,7 @@ function renderAdminCategories() {
     container.innerHTML = categories.map(c => `
         <span class="inline-flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 border">
             ${c}
-            <button onclick="deleteCategory('${c}')" class="text-rose-600 hover:text-rose-800 ml-1"><i class="fa-solid fa-xmark"></i></button>
+            ${currentUser.role === 'admin' ? `<button onclick="deleteCategory('${c}')" class="text-rose-600 hover:text-rose-800 ml-1"><i class="fa-solid fa-xmark"></i></button>` : ''}
         </span>
     `).join('');
 }
@@ -619,7 +653,7 @@ function renderAdminProductsList() {
             </div>
             <div class="flex items-center gap-2">
                 <button onclick="toggleProductAvailability(${p.id}, ${p.is_available !== false})" class="px-3 py-1.5 rounded-xl text-xs font-bold ${p.is_available !== false ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-800'}">${p.is_available !== false ? 'إيقاف' : 'تفعيل'}</button>
-                <button onclick="deleteProduct(${p.id})" class="p-2 text-rose-600"><i class="fa-solid fa-trash"></i></button>
+                ${currentUser.role === 'admin' ? `<button onclick="deleteProduct(${p.id})" class="p-2 text-rose-600"><i class="fa-solid fa-trash"></i></button>` : ''}
             </div>
         </div>
     `).join('');
@@ -638,7 +672,7 @@ function renderAdminReviewsList() {
                 <h4 class="font-bold text-sm text-gray-900">${r.name} <span class="text-xs text-amber-500">(${r.rating || 5}⭐)</span></h4>
                 <p class="text-xs text-gray-600">${r.comment}</p>
             </div>
-            <button onclick="deleteReview(${r.id})" class="px-3 py-1.5 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold">حذف التعليق</button>
+            ${currentUser.role === 'admin' ? `<button onclick="deleteReview(${r.id})" class="px-3 py-1.5 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold">حذف التعليق</button>` : ''}
         </div>
     `).join('');
 }
