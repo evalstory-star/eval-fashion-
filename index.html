@@ -24,9 +24,7 @@
                             accent: '#C5A880'
                         }
                     },
-                    fontFamily: {
-                        sans: ['Tajawal', 'sans-serif'],
-                    }
+                    fontFamily: { sans: ['Tajawal', 'sans-serif'] }
                 }
             }
         }
@@ -139,7 +137,7 @@
         </div>
     </div>
 
-    <!-- Admin Authentication Modal (Professional Replacement for prompt) -->
+    <!-- Admin Password Modal -->
     <div id="admin-auth-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative border border-brand-sand/30">
             <button onclick="closeAdminAuthModal()" class="absolute top-4 left-4 text-gray-400 hover:text-black"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -148,7 +146,7 @@
                     <i class="fa-solid fa-shield-halved"></i>
                 </div>
                 <h3 class="text-xl font-extrabold text-brand-olive">تسجيل دخول المسؤول</h3>
-                <p class="text-xs text-gray-400 mt-1">أدخل كلمة المرور للوصول إلى لوحة الإدارة السحابية</p>
+                <p class="text-xs text-gray-400 mt-1">أدخل كلمة المرور للوصول إلى لوحة الإدارة</p>
             </div>
 
             <form onsubmit="verifyAdminPassword(event)" class="space-y-4">
@@ -164,7 +162,7 @@
         </div>
     </div>
 
-    <!-- Professional Full Dashboard Drawer -->
+    <!-- Professional Admin Drawer Panel -->
     <div id="admin-panel" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden flex justify-end">
         <div class="bg-white w-full max-w-2xl h-full p-6 md:p-8 overflow-y-auto custom-scrollbar flex flex-col justify-between shadow-2xl">
             <div>
@@ -174,24 +172,28 @@
                         <h2 class="text-2xl font-black text-brand-olive flex items-center gap-2">
                             <i class="fa-solid fa-sliders text-brand-accent"></i> لوحة الإدارة الشاملة
                         </h2>
-                        <p class="text-xs text-gray-400 mt-0.5">التحكم الفوري بالمنتجات، الأقسام، والمخزون السحابي</p>
+                        <p class="text-xs text-gray-400 mt-0.5">إدارة الأقسام والمنتجات بمرونة كاملة</p>
                     </div>
                     <button onclick="closeAdminPanel()" class="bg-gray-100 hover:bg-gray-200 text-gray-600 w-10 h-10 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
 
-                <!-- Stats Quick Cards -->
-                <div class="grid grid-cols-2 gap-4 mb-8">
-                    <div class="bg-brand-beige p-4 rounded-2xl border border-brand-sand/30">
-                        <span class="text-xs font-bold text-gray-500">إجمالي قطع المتجر</span>
-                        <h4 id="stat-total-products" class="text-2xl font-black text-brand-olive mt-1">0</h4>
+                <!-- 1. Categories Management Section -->
+                <div class="bg-brand-beige p-5 rounded-2xl border border-brand-sand/40 mb-8">
+                    <h3 class="font-extrabold text-brand-olive text-sm mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group"></i> إدارة الأقسام (إضافة / تعديل / حذف)
+                    </h3>
+                    
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="new-category-input" placeholder="اسم القسم الجديد (مثال: عبايات)" class="flex-1 border rounded-xl p-2.5 text-xs outline-none bg-white border-gray-300 focus:ring-2 focus:ring-brand-olive">
+                        <button onclick="handleAddCategory()" class="bg-brand-olive text-white px-4 py-2.5 rounded-xl font-bold text-xs hover:bg-brand-oliveDark transition"><i class="fa-solid fa-plus"></i> إضافة قسم</button>
                     </div>
-                    <div class="bg-brand-beige p-4 rounded-2xl border border-brand-sand/30">
-                        <span class="text-xs font-bold text-gray-500">عدد الأقسام المتاحة</span>
-                        <h4 id="stat-total-categories" class="text-2xl font-black text-brand-olive mt-1">0</h4>
+
+                    <div id="categories-management-list" class="flex flex-wrap gap-2">
+                        <!-- Dynamic Categories Chips with Edit/Delete -->
                     </div>
                 </div>
 
-                <!-- Admin Add/Edit Form -->
+                <!-- 2. Product Add/Edit Form -->
                 <div class="bg-gray-50 p-6 rounded-2xl border mb-8">
                     <h3 id="form-title" class="font-extrabold text-brand-olive text-base mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-plus-circle"></i> إضافة قطعة جديدة
@@ -202,13 +204,15 @@
                         
                         <div>
                             <label class="block text-xs font-bold mb-1 text-gray-700">اسم القطعة</label>
-                            <input type="text" id="admin-name" required placeholder="مثال: عباية كشمير بحزام" class="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-brand-olive outline-none border-gray-300">
+                            <input type="text" id="admin-name" required placeholder="مثال: عباية كشمير تطريز يدوي" class="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-brand-olive outline-none border-gray-300">
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold mb-1 text-gray-700">القسم (اكتب اسماً جديداً أو اختار)</label>
-                                <input type="text" id="admin-category" placeholder="مثال: عبايات، طرح، فساتين..." required class="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-brand-olive outline-none border-gray-300">
+                                <label class="block text-xs font-bold mb-1 text-gray-700">القسم</label>
+                                <select id="admin-category-select" required class="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-brand-olive outline-none border-gray-300 bg-white">
+                                    <!-- Dynamic Select Options -->
+                                </select>
                             </div>
                             <div>
                                 <label class="block text-xs font-bold mb-1 text-gray-700">السعر ($)</label>
@@ -216,30 +220,35 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold mb-1 text-gray-700">نوع القماش</label>
-                                <input type="text" id="admin-fabric" placeholder="كريب فاخر" class="w-full border rounded-xl p-2.5 text-sm outline-none border-gray-300">
+                        <div>
+                            <label class="block text-xs font-bold mb-1 text-gray-700">نوع القماش</label>
+                            <input type="text" id="admin-fabric" placeholder="مثال: كريب فاخر، حرير، كشمير" class="w-full border rounded-xl p-3 text-sm outline-none border-gray-300">
+                        </div>
+
+                        <!-- Interactive Multi-Select Sizes -->
+                        <div>
+                            <label class="block text-xs font-bold mb-2 text-gray-700">حدد المقاسات المتاحة:</label>
+                            <div class="flex flex-wrap gap-2" id="sizes-checkbox-container">
+                                <!-- Generated checkboxes -->
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold mb-1 text-gray-700">المقاسات (بينها فاصلة)</label>
-                                <input type="text" id="admin-sizes" placeholder="S, M, L, XL" class="w-full border rounded-xl p-2.5 text-sm outline-none border-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold mb-1 text-gray-700">الألوان (بينها فاصلة)</label>
-                                <input type="text" id="admin-colors" placeholder="أسود، بيج، زيتي" class="w-full border rounded-xl p-2.5 text-sm outline-none border-gray-300">
+                        </div>
+
+                        <!-- Interactive Multi-Select Colors -->
+                        <div>
+                            <label class="block text-xs font-bold mb-2 text-gray-700">حدد الألوان المتاحة:</label>
+                            <div class="flex flex-wrap gap-2" id="colors-checkbox-container">
+                                <!-- Generated checkboxes -->
                             </div>
                         </div>
 
                         <div>
                             <label class="block text-xs font-bold mb-1 text-gray-700">صورة القطعة</label>
                             <input type="file" id="admin-image-file" accept="image/*" class="w-full border rounded-xl p-2 text-sm bg-white border-gray-300">
-                            <p class="text-[10px] text-gray-400 mt-1">يتم رفع الصورة تلقائياً لـ Supabase Storage.</p>
                         </div>
 
                         <div>
                             <label class="block text-xs font-bold mb-1 text-gray-700">الوصف التفصيلي</label>
-                            <textarea id="admin-description" rows="3" placeholder="اكتب تفاصيل ومواصفات القطعة هنا..." class="w-full border rounded-xl p-3 text-sm outline-none border-gray-300"></textarea>
+                            <textarea id="admin-description" rows="2" placeholder="اكتب مواصفات القطعة وتفاصيلها..." class="w-full border rounded-xl p-3 text-sm outline-none border-gray-300"></textarea>
                         </div>
 
                         <div class="flex gap-2">
@@ -253,22 +262,21 @@
                     </form>
                 </div>
 
-                <!-- Management Table / Inventory Section -->
+                <!-- Products Table List -->
                 <div>
                     <h3 class="font-extrabold text-brand-text mb-4 text-base flex items-center justify-between">
-                        <span><i class="fa-solid fa-list-check text-brand-accent"></i> قائمة المنتجات والتحكم الحقيقي</span>
+                        <span><i class="fa-solid fa-list-check text-brand-accent"></i> جميع المنتجات المسجلة</span>
                     </h3>
-
                     <div class="bg-white border rounded-2xl overflow-hidden shadow-sm">
-                        <div id="admin-products-table" class="divide-y max-h-80 overflow-y-auto custom-scrollbar">
-                            <!-- Dynamic Table List -->
+                        <div id="admin-products-table" class="divide-y max-h-72 overflow-y-auto custom-scrollbar">
+                            <!-- Dynamic Table -->
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="mt-8 pt-4 border-t text-center">
-                <button onclick="closeAdminPanel()" class="text-xs text-red-500 font-bold hover:underline">تسجيل الخروج من الإدارة</button>
+                <button onclick="closeAdminPanel()" class="text-xs text-red-500 font-bold hover:underline">إغلاق لوحة التحكم</button>
             </div>
         </div>
     </div>
@@ -287,16 +295,50 @@
         const SUPABASE_KEY = 'Sb_publishable_8KMV6LpTk2YyBXgnMha-oA_7yv0mK00';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ** كلمة مرور المسؤول (يمكنك تغييرها من هنا في أي وقت) **
         const ADMIN_PASSWORD = "eval2026";
 
+        // Default Master Data
+        const AVAILABLE_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
+        const AVAILABLE_COLORS = ['أسود', 'أبيض', 'بيج', 'زيتي', 'كشمير', 'كحلي', 'رمادي', 'بني', 'وردي'];
+        
+        let customCategories = ['عبايات', 'طرح', 'فساتين', 'ملابس كاجوال'];
         let productsState = [];
         let logoClickCount = 0;
         let logoClickTimer = null;
 
         document.addEventListener('DOMContentLoaded', () => {
+            renderSizesCheckboxes();
+            renderColorsCheckboxes();
             fetchProducts();
         });
+
+        function renderSizesCheckboxes(selected = []) {
+            const container = document.getElementById('sizes-checkbox-container');
+            container.innerHTML = '';
+            AVAILABLE_SIZES.forEach(size => {
+                const isChecked = selected.includes(size) ? 'checked' : '';
+                container.innerHTML += `
+                    <label class="cursor-pointer border rounded-xl px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 bg-white hover:bg-gray-50 border-gray-300">
+                        <input type="checkbox" name="admin-sizes-check" value="${size}" ${isChecked} class="accent-brand-olive rounded">
+                        <span>${size}</span>
+                    </label>
+                `;
+            });
+        }
+
+        function renderColorsCheckboxes(selected = []) {
+            const container = document.getElementById('colors-checkbox-container');
+            container.innerHTML = '';
+            AVAILABLE_COLORS.forEach(color => {
+                const isChecked = selected.includes(color) ? 'checked' : '';
+                container.innerHTML += `
+                    <label class="cursor-pointer border rounded-xl px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 bg-white hover:bg-gray-50 border-gray-300">
+                        <input type="checkbox" name="admin-colors-check" value="${color}" ${isChecked} class="accent-brand-olive rounded">
+                        <span>${color}</span>
+                    </label>
+                `;
+            });
+        }
 
         // Triple Click Trigger Logic
         function handleLogoClick() {
@@ -318,8 +360,7 @@
 
         function verifyAdminPassword(e) {
             e.preventDefault();
-            const inputPwd = document.getElementById('admin-pass-input').value;
-            if (inputPwd === ADMIN_PASSWORD) {
+            if (document.getElementById('admin-pass-input').value === ADMIN_PASSWORD) {
                 closeAdminAuthModal();
                 document.getElementById('admin-panel').classList.remove('hidden');
                 renderAdminDashboard();
@@ -335,24 +376,29 @@
 
         async function fetchProducts() {
             const grid = document.getElementById('products-grid');
-            grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">جاري تحميل المنتجات من السحابة...</div>';
+            grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">جاري تحميل المنتجات...</div>';
             
             const { data, error } = await _supabase.from('products').select('*').order('id', { ascending: false });
             
             if (error) {
                 console.error("Supabase Error:", error);
-                grid.innerHTML = '<div class="col-span-full text-center py-10 text-red-500 font-bold">حدث خطأ أثناء جلب المنتجات. تأكد من إعداد جدول products.</div>';
+                grid.innerHTML = '<div class="col-span-full text-center py-10 text-red-500 font-bold">خطأ في الجلب. تأكد من جدول products.</div>';
                 return;
             }
 
             productsState = data || [];
+            
+            // Sync categories from database products
+            const dbCategories = productsState.map(p => p.category).filter(Boolean);
+            customCategories = Array.from(new Set([...customCategories, ...dbCategories]));
+
             renderCategoriesNav();
             renderProducts(productsState);
             renderAdminDashboard();
         }
 
         function renderCategoriesNav() {
-            const categories = ['الكل', ...new Set(productsState.map(p => p.category).filter(Boolean))];
+            const categories = ['الكل', ...customCategories];
             
             // Desktop Navbar
             const desktopNav = document.getElementById('desktop-categories');
@@ -366,7 +412,7 @@
                 desktopNav.appendChild(a);
             });
 
-            // Mobile Menu
+            // Mobile Navbar
             const mobileContainer = document.getElementById('mobile-categories-container');
             mobileContainer.innerHTML = '';
             categories.forEach(cat => {
@@ -385,7 +431,7 @@
             grid.innerHTML = '';
 
             if (list.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">لا توجد قطع متاحة حالياً. استخدم لوحة التحكم لإضافة منتجاتك.</div>';
+                grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">لا توجد قطع متاحة حالياً.</div>';
                 return;
             }
 
@@ -418,8 +464,7 @@
             if (cat === 'الكل') {
                 renderProducts(productsState);
             } else {
-                const filtered = productsState.filter(p => p.category === cat);
-                renderProducts(filtered);
+                renderProducts(productsState.filter(p => p.category === cat));
             }
         }
 
@@ -436,13 +481,13 @@
 
             const sizesContainer = document.getElementById('modal-sizes');
             sizesContainer.innerHTML = '';
-            (product.sizes || ['S', 'M', 'L', 'XL']).forEach(s => {
+            (product.sizes || []).forEach(s => {
                 sizesContainer.innerHTML += `<span class="bg-brand-beige px-3 py-1 rounded-lg text-xs font-bold text-brand-text border border-brand-sand/40">${s}</span>`;
             });
 
             const colorsContainer = document.getElementById('modal-colors');
             colorsContainer.innerHTML = '';
-            (product.colors || ['اللون الأساسي']).forEach(c => {
+            (product.colors || []).forEach(c => {
                 colorsContainer.innerHTML += `<span class="bg-gray-100 px-3 py-1 rounded-lg text-xs font-bold text-gray-700 border">${c}</span>`;
             });
 
@@ -453,19 +498,60 @@
             document.getElementById('product-modal').classList.add('hidden');
         }
 
-        // Render Admin Dashboard Table & Stats
+        // Categories Management CRUD Logic
+        function handleAddCategory() {
+            const input = document.getElementById('new-category-input');
+            const catName = input.value.trim();
+            if (catName && !customCategories.includes(catName)) {
+                customCategories.push(catName);
+                input.value = '';
+                renderCategoriesNav();
+                renderAdminDashboard();
+            }
+        }
+
+        function editCategory(oldCat) {
+            const newName = prompt("تعديل اسم القسم:", oldCat);
+            if (newName && newName.trim() !== "" && newName !== oldCat) {
+                const index = customCategories.indexOf(oldCat);
+                if (index !== -1) customCategories[index] = newName.trim();
+                renderCategoriesNav();
+                renderAdminDashboard();
+            }
+        }
+
+        function deleteCategory(cat) {
+            if (confirm(`هل أنت متأكد من حذف قسم (${cat})؟`)) {
+                customCategories = customCategories.filter(c => c !== cat);
+                renderCategoriesNav();
+                renderAdminDashboard();
+            }
+        }
+
+        // Render Admin Dashboard Controls
         function renderAdminDashboard() {
+            // Populate Categories Chips
+            const catContainer = document.getElementById('categories-management-list');
+            catContainer.innerHTML = '';
+            customCategories.forEach(cat => {
+                catContainer.innerHTML += `
+                    <div class="bg-white border rounded-xl px-3 py-1.5 text-xs font-bold flex items-center gap-2 shadow-sm">
+                        <span class="text-gray-800">${cat}</span>
+                        <button onclick="editCategory('${cat}')" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                        <button onclick="deleteCategory('${cat}')" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                    </div>
+                `;
+            });
+
+            // Populate Category Select Input in Form
+            const select = document.getElementById('admin-category-select');
+            select.innerHTML = customCategories.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            // Populate Products Table
             const tableContainer = document.getElementById('admin-products-table');
-            const totalStat = document.getElementById('stat-total-products');
-            const catStat = document.getElementById('stat-total-categories');
-
-            totalStat.textContent = productsState.length;
-            const uniqueCats = new Set(productsState.map(p => p.category).filter(Boolean));
-            catStat.textContent = uniqueCats.size;
-
             tableContainer.innerHTML = '';
             if (productsState.length === 0) {
-                tableContainer.innerHTML = '<p class="text-xs text-gray-400 p-4 text-center">لا توجد منتجات مسجلة حالياً.</p>';
+                tableContainer.innerHTML = '<p class="text-xs text-gray-400 p-4 text-center">لا توجد منتجات مسجلة.</p>';
                 return;
             }
 
@@ -495,29 +581,31 @@
 
             document.getElementById('admin-product-id').value = product.id;
             document.getElementById('admin-name').value = product.name;
-            document.getElementById('admin-category').value = product.category;
+            document.getElementById('admin-category-select').value = product.category;
             document.getElementById('admin-price').value = product.price;
             document.getElementById('admin-fabric').value = product.fabric || '';
-            document.getElementById('admin-sizes').value = (product.sizes || []).join(', ');
-            document.getElementById('admin-colors').value = (product.colors || []).join(', ');
             document.getElementById('admin-description').value = product.description || '';
+
+            renderSizesCheckboxes(product.sizes || []);
+            renderColorsCheckboxes(product.colors || []);
 
             document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تعديل بيانات القطعة الحالية';
             document.getElementById('save-btn').textContent = 'حفظ التعديلات في السحابة';
             
-            // Scroll to form top smoothly
             document.getElementById('admin-panel').querySelector('.overflow-y-auto').scrollTop = 0;
         }
 
         function resetForm() {
             document.getElementById('add-product-form').reset();
             document.getElementById('admin-product-id').value = '';
+            renderSizesCheckboxes();
+            renderColorsCheckboxes();
             document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-plus-circle"></i> إضافة قطعة جديدة';
             document.getElementById('save-btn').textContent = 'حفظ القطعة في السحابة';
         }
 
         async function deleteProduct(id) {
-            if (!confirm("هل أنت متأكد من حذف هذه القطعة نهائياً من السحابة؟")) return;
+            if (!confirm("هل أنت متأكد من حذف هذه القطعة نهائياً؟")) return;
 
             const { error } = await _supabase.from('products').delete().eq('id', id);
             if (error) {
@@ -535,17 +623,22 @@
 
             const productId = document.getElementById('admin-product-id').value;
             const name = document.getElementById('admin-name').value;
-            const category = document.getElementById('admin-category').value.trim();
+            const category = document.getElementById('admin-category-select').value;
             const price = parseFloat(document.getElementById('admin-price').value);
             const fabric = document.getElementById('admin-fabric').value;
             const description = document.getElementById('admin-description').value;
-            const sizes = document.getElementById('admin-sizes').value.split(',').map(s => s.trim()).filter(Boolean);
-            const colors = document.getElementById('admin-colors').value.split(',').map(c => c.trim()).filter(Boolean);
-            const fileInput = document.getElementById('admin-image-file');
+            
+            // Get selected sizes
+            const sizeBoxes = document.querySelectorAll('input[name="admin-sizes-check"]:checked');
+            const sizes = Array.from(sizeBoxes).map(cb => cb.value);
 
+            // Get selected colors
+            const colorBoxes = document.querySelectorAll('input[name="admin-colors-check"]:checked');
+            const colors = Array.from(colorBoxes).map(cb => cb.value);
+
+            const fileInput = document.getElementById('admin-image-file');
             let imageUrl = '';
 
-            // Handle image upload if selected
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
                 const fileExt = file.name.split('.').pop();
@@ -555,9 +648,7 @@
                     .from('product-images')
                     .upload(fileName, file);
 
-                if (uploadError) {
-                    console.error("Upload error:", uploadError);
-                } else {
+                if (!uploadError) {
                     const { data: publicUrlData } = _supabase.storage.from('product-images').getPublicUrl(fileName);
                     imageUrl = publicUrlData.publicUrl;
                 }
@@ -569,11 +660,9 @@
             let resultError = null;
 
             if (productId) {
-                // Update Existing
                 const { error } = await _supabase.from('products').update(payload).eq('id', productId);
                 resultError = error;
             } else {
-                // Insert New
                 const { error } = await _supabase.from('products').insert([payload]);
                 resultError = error;
             }
@@ -584,7 +673,7 @@
             if (resultError) {
                 alert("حدث خطأ أثناء الحفظ: " + resultError.message);
             } else {
-                alert(productId ? "تم تعديل القطعة بنجاح!" : "تمت إضافة القطعة والفرع بنجاح!");
+                alert(productId ? "تم تعديل القطعة بنجاح!" : "تمت إضافة القطعة بنجاح!");
                 resetForm();
                 fetchProducts();
             }
