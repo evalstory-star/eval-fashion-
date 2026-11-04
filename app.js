@@ -22,7 +22,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     await fetchProducts();
     await fetchReviews();
     renderCategories();
-    renderProducts();
+    renderProducts('all');
     renderCart();
     renderDynamicContent();
 
@@ -34,6 +34,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 function showToast(msg) {
     const toast = document.getElementById('toast');
+    if (!toast) return;
     document.getElementById('toast-message').innerText = msg;
     toast.classList.remove('translate-y-20', 'opacity-0');
     setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
@@ -47,29 +48,43 @@ function loadLocalState() {
     const savedCart = localStorage.getItem('eval_cart');
     if (savedCart) cart = JSON.parse(savedCart);
 
-    document.getElementById('admin-whatsapp').value = storeSettings.whatsapp;
-    document.getElementById('admin-fb').value = storeSettings.fb;
-    document.getElementById('admin-ig').value = storeSettings.ig;
-    document.getElementById('admin-about-text').value = storeSettings.aboutText;
-    document.getElementById('admin-contact-text').value = storeSettings.contactText;
+    const waInput = document.getElementById('admin-whatsapp');
+    if(waInput) waInput.value = storeSettings.whatsapp;
+    const fbInput = document.getElementById('admin-fb');
+    if(fbInput) fbInput.value = storeSettings.fb;
+    const igInput = document.getElementById('admin-ig');
+    if(igInput) igInput.value = storeSettings.ig;
+    const aboutInput = document.getElementById('admin-about-text');
+    if(aboutInput) aboutInput.value = storeSettings.aboutText;
+    const contactInput = document.getElementById('admin-contact-text');
+    if(contactInput) contactInput.value = storeSettings.contactText;
     
-    document.getElementById('pay-cod').checked = storeSettings.payments.cod;
-    document.getElementById('pay-instapay').checked = storeSettings.payments.instapay;
-    document.getElementById('pay-visa').checked = storeSettings.payments.visa;
-    document.getElementById('pay-bank').checked = storeSettings.payments.bank;
+    if(document.getElementById('pay-cod')) document.getElementById('pay-cod').checked = storeSettings.payments.cod;
+    if(document.getElementById('pay-instapay')) document.getElementById('pay-instapay').checked = storeSettings.payments.instapay;
+    if(document.getElementById('pay-visa')) document.getElementById('pay-visa').checked = storeSettings.payments.visa;
+    if(document.getElementById('pay-bank')) document.getElementById('pay-bank').checked = storeSettings.payments.bank;
 }
 
 function switchTab(tab) {
     ['store', 'cart', 'contact', 'reviews', 'about', 'admin'].forEach(v => {
-        document.getElementById(`view-${v}`).classList.add('hidden');
+        const el = document.getElementById(`view-${v}`);
+        if(el) el.classList.add('hidden');
     });
-    document.getElementById(`view-${tab}`).classList.remove('hidden');
+    const target = document.getElementById(`view-${tab}`);
+    if(target) target.classList.remove('hidden');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if(tab === 'reviews') renderReviews();
 }
 
-function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
-function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
+function openAuthModal() { 
+    const modal = document.getElementById('auth-modal');
+    if(modal) modal.classList.remove('hidden'); 
+}
+
+function closeAuthModal() { 
+    const modal = document.getElementById('auth-modal');
+    if(modal) modal.classList.add('hidden'); 
+}
 
 async function handleLogin(e) {
     e.preventDefault();
@@ -98,16 +113,17 @@ async function setupDashboard() {
     document.getElementById('admin-welcome-title').innerText = `أهلاً بك، ${currentUser.username}`;
     document.getElementById('admin-role-badge').innerText = currentUser.role === 'admin' ? 'صلاحية: المدير الرئيسي' : 'صلاحية: موظف';
 
+    const superPanel = document.getElementById('super-admin-panel');
     if (currentUser.role === 'admin') {
-        document.getElementById('super-admin-panel').classList.remove('hidden');
+        if(superPanel) superPanel.classList.remove('hidden');
         await fetchStaffList();
     } else {
-        document.getElementById('super-admin-panel').classList.add('hidden');
+        if(superPanel) superPanel.classList.add('hidden');
     }
 
     renderAdminCategories();
     renderAdminProductsList();
-    await fetchReviews(); // جلب التعليقات وتحديثها فور فتح اللوحة
+    await fetchReviews();
     document.getElementById('login-user').value = '';
     document.getElementById('login-pass').value = '';
 }
@@ -148,6 +164,7 @@ async function deleteStaff(id) {
 
 function renderStaffList() {
     const container = document.getElementById('staff-users-list');
+    if(!container) return;
     if (staffList.length === 0) { container.innerHTML = '<p class="text-xs text-gray-500 py-2">لا يوجد موظفين مضافين.</p>'; return; }
     container.innerHTML = staffList.map(s => `
         <div class="py-2.5 flex items-center justify-between text-sm">
@@ -165,9 +182,13 @@ function renderStaffList() {
 
 async function fetchProducts() {
     try {
-        const { data } = await _supabase.from('products').select('*').order('created_at', { ascending: false });
-        if (data) products = data;
-    } catch (err) { console.error(err); }
+        const { data, error } = await _supabase.from('products').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        if (data) {
+            products = data;
+            renderProducts('all');
+        }
+    } catch (err) { console.error("Error fetching products:", err); }
 }
 
 async function fetchReviews() {
@@ -182,17 +203,21 @@ async function fetchReviews() {
 }
 
 function renderDynamicContent() {
-    document.getElementById('dynamic-about-content').innerHTML = `<p>${storeSettings.aboutText.replace(/\n/g, '<br>')}</p>`;
-    document.getElementById('dynamic-contact-content').innerHTML = `
+    const aboutDiv = document.getElementById('dynamic-about-content');
+    if(aboutDiv) aboutDiv.innerHTML = `<p>${storeSettings.aboutText.replace(/\n/g, '<br>')}</p>`;
+    
+    const contactDiv = document.getElementById('dynamic-contact-content');
+    if(contactDiv) contactDiv.innerHTML = `
         <p>${storeSettings.contactText.replace(/\n/g, '<br>')}</p>
         <div class="pt-4 flex items-center gap-3 text-emerald-800 font-bold">
             <i class="fa-brands fa-whatsapp text-2xl"></i>
             <span>رقم الواتساب: ${storeSettings.whatsapp}</span>
         </div>
     `;
-    document.getElementById('footer-fb').href = storeSettings.fb;
-    document.getElementById('footer-ig').href = storeSettings.ig;
-    document.getElementById('footer-wa').href = `https://wa.me/${storeSettings.whatsapp}`;
+    
+    if(document.getElementById('footer-fb')) document.getElementById('footer-fb').href = storeSettings.fb;
+    if(document.getElementById('footer-ig')) document.getElementById('footer-ig').href = storeSettings.ig;
+    if(document.getElementById('footer-wa')) document.getElementById('footer-wa').href = `https://wa.me/${storeSettings.whatsapp}`;
 }
 
 function openProductDetailModal(pId) {
@@ -200,6 +225,7 @@ function openProductDetailModal(pId) {
     if (!p) return;
 
     const modalContent = document.getElementById('modal-product-content');
+    if(!modalContent) return;
     
     const sizesArr = (p.sizes && p.sizes.length) ? p.sizes : ['Free Size'];
     const sizesHTML = sizesArr.map((s, idx) => `
@@ -247,10 +273,14 @@ function openProductDetailModal(pId) {
             </button>
         </div>
     `;
-    document.getElementById('product-detail-modal').classList.remove('hidden');
+    const modal = document.getElementById('product-detail-modal');
+    if(modal) modal.classList.remove('hidden');
 }
 
-function closeProductDetailModal() { document.getElementById('product-detail-modal').classList.add('hidden'); }
+function closeProductDetailModal() { 
+    const modal = document.getElementById('product-detail-modal');
+    if(modal) modal.classList.add('hidden'); 
+}
 
 function addConfiguredToCart(pId) {
     const p = products.find(prod => String(prod.id) === String(pId));
@@ -279,11 +309,13 @@ function addConfiguredToCart(pId) {
 async function handleProductSubmit(e) {
     e.preventDefault();
     const saveBtn = document.getElementById('save-btn');
-    saveBtn.disabled = true;
-    saveBtn.innerHTML = 'جاري النشر...';
+    if(saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = 'جاري النشر...'; }
     try {
-        const file = document.getElementById('p-image').files[0];
+        const fileInput = document.getElementById('p-image');
+        if (!fileInput || !fileInput.files[0]) throw new Error("يرجى اختيار صورة للقطعة");
+        const file = fileInput.files[0];
         const fileName = `${Date.now()}.${file.name.split('.').pop()}`;
+        
         await _supabase.storage.from('product-images').upload(fileName, file);
         const { data: urlData } = _supabase.storage.from('product-images').getPublicUrl(fileName);
 
@@ -306,21 +338,24 @@ async function handleProductSubmit(e) {
         showToast("تم نشر القطعة بنجاح!");
         document.getElementById('product-form').reset();
         await fetchProducts();
-        renderProducts();
         renderAdminProductsList();
     } catch (err) { alert("خطأ: " + err.message); }
-    finally { saveBtn.disabled = false; saveBtn.innerText = "نشر القطعة"; }
+    finally { 
+        if(saveBtn) { saveBtn.disabled = false; saveBtn.innerText = "نشر القطعة"; }
+    }
 }
 
 async function toggleProductAvailability(id, currentStatus) {
     await _supabase.from('products').update({ is_available: !currentStatus }).eq('id', id);
-    await fetchProducts(); renderProducts(); renderAdminProductsList();
+    await fetchProducts(); 
+    renderAdminProductsList();
 }
 
 async function deleteProduct(id) {
     if (!confirm("هل أنت متأكد من الحذف؟")) return;
     await _supabase.from('products').delete().eq('id', id);
-    await fetchProducts(); renderProducts(); renderAdminProductsList();
+    await fetchProducts(); 
+    renderAdminProductsList();
 }
 
 async function submitReview(e) {
@@ -354,6 +389,7 @@ async function deleteReview(id) {
 function handleAddCategory(e) {
     e.preventDefault();
     const input = document.getElementById('new-category-name');
+    if(!input) return;
     const val = input.value.trim();
     if(val && !categories.includes(val)) {
         categories.push(val);
@@ -446,8 +482,8 @@ function renderProducts(filter = 'all') {
 
 function filterByCategory(cat) {
     document.querySelectorAll('.cat-btn').forEach(b => { b.classList.remove('bg-gray-900', 'text-white'); b.classList.add('bg-white', 'text-gray-600'); });
-    if(event && event.target) {
-        event.target.classList.add('bg-gray-900', 'text-white');
+    if(event && event.currentTarget) {
+        event.currentTarget.classList.add('bg-gray-900', 'text-white');
     }
     renderProducts(cat);
 }
@@ -541,7 +577,8 @@ function renderCart() {
         `;
     }).join('');
 
-    document.getElementById('cart-total-price').innerText = `${total} ج.م`;
+    const totalPriceEl = document.getElementById('cart-total-price');
+    if(totalPriceEl) totalPriceEl.innerText = `${total} ج.م`;
 
     let payHTML = '';
     if(storeSettings.payments.cod) payHTML += `<label class="flex items-center gap-2 p-3 bg-gray-50 border rounded-xl cursor-pointer"><input type="radio" name="pay_method" value="الدفع عند الاستلام" checked> الدفع عند الاستلام</label>`;
@@ -563,7 +600,7 @@ function checkoutWhatsApp() {
     let msg = `مرحباً EVAL، أود تأكيد الطلب التفصيلي التالي:\n\n`;
     let total = 0;
     cart.forEach((item, i) => {
-        msg += `📌 قطعة رقم (${i + 1}): `${item.name}\n`;
+        msg += `📌 قطعة رقم (${i + 1}): ${item.name}\n`;
         msg += `   - السعر: ${item.price} ج.م\n`;
         msg += `   - المقاس المختار: ${item.size || 'Free Size'}\n`;
         msg += `   - اللون المختار: ${item.color || 'أساسي'}\n\n`;
