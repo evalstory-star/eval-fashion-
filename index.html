@@ -31,6 +31,12 @@
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased min-h-screen flex flex-col justify-between">
 
+    <!-- Announcement Bar -->
+    <div class="bg-emerald-900 text-white text-xs font-bold py-2 px-4 text-center tracking-wider flex items-center justify-center gap-2">
+        <i class="fa-solid fa-bolt text-amber-400"></i>
+        <span>خصم لفترة محدودة على تشكيلة العبايات والفساتين الراقية + شحن سريع لكافة المحافظات!</span>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-5 left-5 z-50 bg-emerald-800 text-white px-5 py-3 rounded-2xl shadow-xl font-bold text-sm transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2">
         <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
@@ -86,14 +92,24 @@
                 <p class="text-gray-200 text-sm sm:text-lg max-w-lg font-medium">تصاميم حصرية وخامات فريدة صنعت خصيصاً لتناسب ذوقك الراقي وتمنحك إطلالة لا تُنسى.</p>
             </div>
 
-            <!-- Categories Filter -->
-            <div class="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto px-2 pb-3 pt-1 scrollbar-none" id="category-filters"></div>
+            <!-- Categories Filter & Sort Controls -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <div class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 scrollbar-none" id="category-filters"></div>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <span class="text-xs font-bold text-gray-500 whitespace-nowrap">ترتيب حسب:</span>
+                    <select id="sort-select" onchange="handleSortChange()" class="p-2 border rounded-xl text-xs font-bold bg-gray-50 text-gray-700 w-full sm:w-auto">
+                        <option value="newest">الأحدث وصولاً</option>
+                        <option value="price-asc">السعر: من الأرخص للأغلى</option>
+                        <option value="price-desc">السعر: من الأغلى للأرخص</option>
+                    </select>
+                </div>
+            </div>
 
             <!-- Products Grid -->
             <div id="products-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"></div>
         </section>
 
-        <!-- Product Details Modal -->
+        <!-- Product Details Modal with Gallery & Share -->
         <div id="product-detail-modal" class="fixed inset-0 bg-gray-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-y-auto max-h-[90vh]">
                 <button onclick="closeProductDetailModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-2xl"></i></button>
@@ -128,18 +144,28 @@
             <div id="dynamic-contact-content" class="text-gray-700 space-y-4 text-base leading-relaxed"></div>
         </section>
 
-        <!-- Reviews View -->
+        <!-- Reviews View with Star Rating -->
         <section id="view-reviews" class="hidden max-w-3xl mx-auto space-y-8">
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 space-y-4">
                 <h2 class="text-2xl font-black text-gray-900">أضف تقييمك أو تعليقك</h2>
                 <form onsubmit="submitReview(event)" class="space-y-4">
                     <input type="text" id="review-name" required class="w-full p-3 border rounded-xl text-sm" placeholder="اسمك الكريم">
-                    <textarea id="review-text" required rows="3" class="w-full p-3 border rounded-xl text-sm" placeholder="اكتب تعليقك هنا..."></textarea>
-                    <button type="submit" class="px-6 py-3 bg-emerald-800 text-white font-bold rounded-xl hover:bg-emerald-900 transition-all text-sm">نشر التعليق</button>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-gray-700">التقييم:</span>
+                        <select id="review-rating" class="p-2 border rounded-xl text-xs font-bold bg-white">
+                            <option value="5">⭐⭐⭐⭐⭐ (5/5 ممتاز)</option>
+                            <option value="4">⭐⭐⭐⭐ (4/5 جيد جداً)</option>
+                            <option value="3">⭐⭐⭐ (3/5 جيد)</option>
+                            <option value="2">⭐⭐ (2/5 مقبول)</option>
+                            <option value="1">⭐ (1/5 ضعيف)</option>
+                        </select>
+                    </div>
+                    <textarea id="review-text" required rows="3" class="w-full p-3 border rounded-xl text-sm" placeholder="اكتب تعليقك وتجربتك معنا هنا..."></textarea>
+                    <button type="submit" class="px-6 py-3 bg-emerald-800 text-white font-bold rounded-xl hover:bg-emerald-900 transition-all text-sm">نشر التقييم والتعليق</button>
                 </form>
             </div>
             <div class="space-y-4">
-                <h3 class="text-xl font-bold text-gray-900">آراء العملاء</h3>
+                <h3 class="text-xl font-bold text-gray-900">آراء وتقييمات العملاء</h3>
                 <div id="reviews-list" class="space-y-3"></div>
             </div>
         </section>
@@ -150,7 +176,7 @@
             <div id="dynamic-about-content" class="text-gray-700 space-y-4 text-base leading-relaxed"></div>
         </section>
 
-        <!-- Admin View -->
+        <!-- Admin View with Quick Statistics -->
         <section id="view-admin" class="hidden space-y-8">
             <div class="flex items-center justify-between border-b pb-4 bg-white p-6 rounded-2xl shadow-sm">
                 <div>
@@ -160,6 +186,31 @@
                 <button onclick="logoutAdmin()" class="px-4 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl font-bold text-sm transition-all">
                     تسجيل الخروج <i class="fa-solid fa-right-from-bracket mr-1"></i>
                 </button>
+            </div>
+
+            <!-- Quick Stats Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400">إجمالي المنتجات</p>
+                        <h4 id="stat-products-count" class="text-2xl font-black text-gray-900 mt-1">0</h4>
+                    </div>
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-800 rounded-xl flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-shirt"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400">إجمالي التعليقات</p>
+                        <h4 id="stat-reviews-count" class="text-2xl font-black text-gray-900 mt-1">0</h4>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-50 text-amber-700 rounded-xl flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-comments"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400">الموظفون النشطون</p>
+                        <h4 id="stat-staff-count" class="text-2xl font-black text-gray-900 mt-1">0</h4>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-users"></i></div>
+                </div>
             </div>
 
             <!-- Super Admin Panel -->
@@ -233,9 +284,9 @@
                 <button onclick="saveStoreSettings()" class="px-6 py-2.5 bg-emerald-800 text-white font-bold text-sm rounded-xl hover:bg-emerald-900 shadow-sm">حفظ التعديلات</button>
             </div>
 
-            <!-- Add Product Form -->
+            <!-- Add Product Form with Multi-Image Gallery Support -->
             <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-6">
-                <h3 class="font-bold text-gray-800 text-base">إضافة قطعة جديدة للمتجر</h3>
+                <h3 class="font-bold text-gray-800 text-base">إضافة قطعة جديدة للمتجر (مع صور متعددة)</h3>
                 <form id="product-form" onsubmit="handleProductSubmit(event)" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <input type="text" id="p-name" required class="p-3 border rounded-xl text-sm" placeholder="اسم القطعة">
@@ -275,8 +326,8 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">صورة القطعة:</label>
-                        <input type="file" id="p-image" accept="image/*" required class="w-full text-xs text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-800">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">صور القطعة (اختر حتى 3 صور لتشكيل المعرض):</label>
+                        <input type="file" id="p-images" accept="image/*" multiple required class="w-full text-xs text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-800">
                     </div>
                     <button type="submit" id="save-btn" class="w-full py-3.5 bg-emerald-800 text-white font-bold rounded-xl hover:bg-emerald-900 shadow-md">نشر القطعة</button>
                 </form>
