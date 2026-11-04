@@ -31,12 +31,11 @@
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased min-h-screen flex flex-col justify-between">
 
-    <!-- Announcement Bar الديناميكي -->
-    <div id="top-announcement-bar" class="bg-emerald-900 text-white text-xs font-bold py-2 px-4 text-center tracking-wider flex items-center justify-center gap-2">
+    <!-- Fixed Announcement Bar -->
+    <div class="bg-emerald-900 text-white text-xs font-bold py-2 px-4 text-center tracking-wider flex items-center justify-center gap-2 shadow-sm">
         <i class="fa-solid fa-bolt text-amber-400"></i>
-        <span id="announcement-text-content">صُنعت كل قطعة بكل حب وإتقان لتليق بجمالكِ سيدتي</span>
+        <span>صُنعت كل قطعة بكل حب وإتقان لتليق بجمالك سيدتي</span>
     </div>
-
 
     <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-5 left-5 z-50 bg-emerald-800 text-white px-5 py-3 rounded-2xl shadow-xl font-bold text-sm transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2">
@@ -229,23 +228,6 @@
                 <div class="space-y-2">
                     <h4 class="text-xs font-bold text-gray-400">قائمة الموظفين:</h4>
                     <div id="staff-users-list" class="divide-y divide-slate-800"></div>
-                </div>
-            </div>
-
-            <!-- لوحة تحكم الشريط العلوي (جديد) -->
-            <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-4">
-                <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
-                    <i class="fa-solid fa-bullhorn text-emerald-700"></i> إدارة الشريط العلوي المتحرك
-                </h3>
-                <div class="space-y-3">
-                    <label class="flex items-center gap-2 cursor-pointer font-bold text-sm">
-                        <input type="checkbox" id="admin-bar-status" class="w-4 h-4 accent-emerald-800"> تفعيل الشريط العلوي في المتجر
-                    </label>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">نص الشريط العلوي:</label>
-                        <input type="text" id="admin-bar-message" class="w-full p-3 border rounded-xl text-sm font-semibold bg-gray-50">
-                    </div>
-                    <button onclick="saveAnnouncementBarSettings()" class="px-6 py-2.5 bg-emerald-800 text-white font-bold text-sm rounded-xl hover:bg-emerald-900 shadow-sm">حفظ إعدادات الشريط العلوي</button>
                 </div>
             </div>
 
