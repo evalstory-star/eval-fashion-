@@ -8,6 +8,7 @@ let reviews = [];
 let staffList = [];
 let categories = ['عبايات', 'طرح', 'فساتين', 'ملابس كاجوال'];
 let cart = [];
+let currentCategoryFilter = 'all';
 let storeSettings = {
     whatsapp: '201108396536',
     fb: 'https://facebook.com',
@@ -121,6 +122,11 @@ async function setupDashboard() {
         if(superPanel) superPanel.classList.add('hidden');
     }
 
+    // تحديث إحصائيات لوحة التحكم السريعة
+    document.getElementById('stat-products-count').innerText = products.length;
+    document.getElementById('stat-reviews-count').innerText = reviews.length;
+    document.getElementById('stat-staff-count').innerText = staffList.length || 1;
+
     renderAdminCategories();
     renderAdminProductsList();
     await fetchReviews();
@@ -133,7 +139,10 @@ function logoutAdmin() { currentUser = null; switchTab('store'); }
 async function fetchStaffList() {
     try {
         const { data } = await _supabase.from('staff_users').select('*').order('created_at', { ascending: false });
-        if (data) staffList = data;
+        if (data) {
+            staffList = data;
+            document.getElementById('stat-staff-count').innerText = staffList.length;
+        }
         renderStaffList();
     } catch (err) { console.error(err); }
 }
@@ -186,7 +195,7 @@ async function fetchProducts() {
         if (error) throw error;
         if (data) {
             products = data;
-            renderProducts('all');
+            renderProducts(currentCategoryFilter);
         }
     } catch (err) { console.error("Error fetching products:", err); }
 }
@@ -196,6 +205,7 @@ async function fetchReviews() {
         const { data } = await _supabase.from('reviews').select('*').order('created_at', { ascending: false });
         if (data) {
             reviews = data;
+            document.getElementById('stat-reviews-count').innerText = reviews.length;
             renderReviews();
             renderAdminReviewsList();
         }
@@ -220,6 +230,7 @@ function renderDynamicContent() {
     if(document.getElementById('footer-wa')) document.getElementById('footer-wa').href = `https://wa.me/${storeSettings.whatsapp}`;
 }
 
+// عرض نافذة تفاصيل المنتج مع دعم معرض الصور المتعددة وزر المشاركة
 function openProductDetailModal(pId) {
     const p = products.find(prod => String(prod.id) === String(pId));
     if (!p) return;
@@ -227,6 +238,13 @@ function openProductDetailModal(pId) {
     const modalContent = document.getElementById('modal-product-content');
     if(!modalContent) return;
     
+    let imagesArr = (p.images && p.images.length) ? p.images : [p.image_url];
+    const mainImg = imagesArr[0];
+
+    const thumbsHTML = imagesArr.map((img, idx) => `
+        <img src="${img}" onclick="document.getElementById('main-modal-img').src='${img}'" class="w-16 h-16 object-cover rounded-xl border cursor-pointer hover:border-emerald-800 transition-all ${idx === 0 ? 'border-2 border-emerald-800' : ''}" alt="thumb">
+    `).join('');
+
     const sizesArr = (p.sizes && p.sizes.length) ? p.sizes : ['Free Size'];
     const sizesHTML = sizesArr.map((s, idx) => `
         <label class="flex items-center gap-1.5 px-3 py-2 border rounded-xl cursor-pointer text-xs font-bold hover:bg-emerald-50">
@@ -244,8 +262,9 @@ function openProductDetailModal(pId) {
     `).join('');
 
     modalContent.innerHTML = `
-        <div>
-            <img src="${p.image_url}" class="w-full h-80 sm:h-96 object-cover rounded-2xl border shadow-sm" alt="${p.name}">
+        <div class="space-y-4">
+            <img id="main-modal-img" src="${mainImg}" class="w-full h-80 sm:h-96 object-cover rounded-2xl border shadow-sm" alt="${p.name}">
+            <div class="flex items-center gap-2 overflow-x-auto pb-1">${thumbsHTML}</div>
         </div>
         <div class="flex flex-col justify-between space-y-4">
             <div class="space-y-4">
@@ -268,9 +287,14 @@ function openProductDetailModal(pId) {
                 </div>
             </div>
 
-            <button onclick="addConfiguredToCart('${p.id}')" class="w-full py-4 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 text-base">
-                <i class="fa-solid fa-cart-plus text-xl"></i> إضافة للسلة بالتفاصيل المختارة
-            </button>
+            <div class="space-y-2">
+                <button onclick="addConfiguredToCart('${p.id}')" class="w-full py-4 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 text-base">
+                    <i class="fa-solid fa-cart-plus text-xl"></i> إضافة للسلة بالتفاصيل المختارة
+                </button>
+                <button onclick="shareProduct('${p.name}', '${p.price}')" class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-share-nodes"></i> مشاركة القطعة مع الأصدقاء
+                </button>
+            </div>
         </div>
     `;
     const modal = document.getElementById('product-detail-modal');
@@ -282,18 +306,29 @@ function closeProductDetailModal() {
     if(modal) modal.classList.add('hidden'); 
 }
 
+function shareProduct(name, price) {
+    const text = `تأملي هذا التصميم الراقي من متجر EVAL: ${name} بسعر ${price} ج.م. تصفحيه الآن!`;
+    if (navigator.share) {
+        navigator.share({ title: 'EVAL Store', text: text, url: window.location.href }).catch(() => {});
+    } else {
+        navigator.clipboard.writeText(text + " " + window.location.href);
+        showToast("تم نسخ رابط ورسالة المشاركة للحافظة!");
+    }
+}
+
 function addConfiguredToCart(pId) {
     const p = products.find(prod => String(prod.id) === String(pId));
     if (!p) return;
 
     const selectedSize = document.querySelector('input[name="modal_selected_size"]:checked')?.value || 'Free Size';
     const selectedColor = document.querySelector('input[name="modal_selected_color"]:checked')?.value || 'أساسي';
+    const imagesArr = (p.images && p.images.length) ? p.images : [p.image_url];
 
     const cartItem = {
         id: p.id,
         name: p.name,
         price: p.price,
-        image_url: p.image_url,
+        image_url: imagesArr[0],
         size: selectedSize,
         color: selectedColor
     };
@@ -309,15 +344,19 @@ function addConfiguredToCart(pId) {
 async function handleProductSubmit(e) {
     e.preventDefault();
     const saveBtn = document.getElementById('save-btn');
-    if(saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = 'جاري النشر...'; }
+    if(saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = 'جاري رفع الصور والنشر...'; }
     try {
-        const fileInput = document.getElementById('p-image');
-        if (!fileInput || !fileInput.files[0]) throw new Error("يرجى اختيار صورة للقطعة");
-        const file = fileInput.files[0];
-        const fileName = `${Date.now()}.${file.name.split('.').pop()}`;
+        const fileInput = document.getElementById('p-images');
+        if (!fileInput || fileInput.files.length === 0) throw new Error("يرجى اختيار صورة واحدة على الأقل للقطعة");
         
-        await _supabase.storage.from('product-images').upload(fileName, file);
-        const { data: urlData } = _supabase.storage.from('product-images').getPublicUrl(fileName);
+        let uploadedUrls = [];
+        for (let i = 0; i < fileInput.files.length; i++) {
+            const file = fileInput.files[i];
+            const fileName = `${Date.now()}_${i}.${file.name.split('.').pop()}`;
+            await _supabase.storage.from('product-images').upload(fileName, file);
+            const { data: urlData } = _supabase.storage.from('product-images').getPublicUrl(fileName);
+            uploadedUrls.push(urlData.publicUrl);
+        }
 
         const selectedSizes = Array.from(document.querySelectorAll('#sizes-selector input:checked')).map(cb => cb.value);
         const selectedColors = Array.from(document.querySelectorAll('#colors-selector input:checked')).map(cb => cb.value);
@@ -330,7 +369,8 @@ async function handleProductSubmit(e) {
             description: document.getElementById('p-desc').value.trim(),
             sizes: selectedSizes.length > 0 ? selectedSizes : ['Free Size'],
             colors: selectedColors.length > 0 ? selectedColors : ['أساسي'],
-            image_url: urlData.publicUrl,
+            image_url: uploadedUrls[0],
+            images: uploadedUrls,
             is_available: true
         };
 
@@ -361,17 +401,18 @@ async function deleteProduct(id) {
 async function submitReview(e) {
     e.preventDefault();
     const name = document.getElementById('review-name').value.trim();
+    const rating = parseInt(document.getElementById('review-rating').value);
     const comment = document.getElementById('review-text').value.trim();
     
     try {
-        const { error } = await _supabase.from('reviews').insert([{ name, comment }]);
+        const { error } = await _supabase.from('reviews').insert([{ name, rating, comment }]);
         if (error) throw error;
-        showToast("تم نشر تعليقك بنجاح!");
+        showToast("تم نشر تقييمك بنجاح!");
         document.getElementById('review-name').value = '';
         document.getElementById('review-text').value = '';
         await fetchReviews();
     } catch (err) {
-        alert("حدث خطأ أثناء نشر التعليق: " + err.message);
+        alert("حدث خطأ أثناء نشر التقييم: " + err.message);
     }
 }
 
@@ -453,20 +494,46 @@ function renderAdminCategories() {
     `).join('');
 }
 
+function filterByCategory(cat) {
+    currentCategoryFilter = cat;
+    document.querySelectorAll('.cat-btn').forEach(b => { b.classList.remove('bg-gray-900', 'text-white'); b.classList.add('bg-white', 'text-gray-600'); });
+    if(event && event.currentTarget) {
+        event.currentTarget.classList.add('bg-gray-900', 'text-white');
+    }
+    renderProducts(cat);
+}
+
+function handleSortChange() {
+    renderProducts(currentCategoryFilter);
+}
+
 function renderProducts(filter = 'all') {
     const grid = document.getElementById('products-grid');
     if(!grid) return;
-    const items = filter === 'all' ? products : products.filter(p => p.category === filter);
+    
+    let items = filter === 'all' ? [...products] : products.filter(p => p.category === filter);
+    
+    const sortVal = document.getElementById('sort-select')?.value || 'newest';
+    if (sortVal === 'newest') {
+        items.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    } else if (sortVal === 'price-asc') {
+        items.sort((a, b) => Number(a.price) - Number(b.price));
+    } else if (sortVal === 'price-desc') {
+        items.sort((a, b) => Number(b.price) - Number(a.price));
+    }
+
     if (items.length === 0) {
         grid.innerHTML = `<div class="col-span-full text-center py-16 text-gray-400 font-bold">لا توجد منتجات متوفرة حالياً.</div>`;
         return;
     }
+    
     grid.innerHTML = items.map(p => {
         const avail = p.is_available !== false;
+        let imagesArr = (p.images && p.images.length) ? p.images : [p.image_url];
         return `
             <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col relative">
                 ${!avail ? '<div class="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center"><span class="bg-gray-900 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow">نفذت الكمية</span></div>' : ''}
-                <img src="${p.image_url}" onclick="openProductDetailModal('${p.id}')" class="w-full h-52 sm:h-64 object-cover cursor-pointer hover:opacity-95 transition-all" alt="${p.name}">
+                <img src="${imagesArr[0]}" onclick="openProductDetailModal('${p.id}')" class="w-full h-52 sm:h-64 object-cover cursor-pointer hover:opacity-95 transition-all" alt="${p.name}">
                 <div class="p-4 flex flex-col flex-grow space-y-2">
                     <span class="text-[10px] font-bold px-2 py-0.5 bg-emerald-50 text-emerald-800 rounded-md w-fit">${p.category}</span>
                     <h3 onclick="openProductDetailModal('${p.id}')" class="font-bold text-gray-900 text-sm line-clamp-1 cursor-pointer hover:text-emerald-800 transition-all">${p.name}</h3>
@@ -480,24 +547,24 @@ function renderProducts(filter = 'all') {
     }).join('');
 }
 
-function filterByCategory(cat) {
-    document.querySelectorAll('.cat-btn').forEach(b => { b.classList.remove('bg-gray-900', 'text-white'); b.classList.add('bg-white', 'text-gray-600'); });
-    if(event && event.currentTarget) {
-        event.currentTarget.classList.add('bg-gray-900', 'text-white');
-    }
-    renderProducts(cat);
-}
-
 function renderReviews() {
     const list = document.getElementById('reviews-list');
     if(!list) return;
-    if(reviews.length === 0) { list.innerHTML = `<p class="text-sm text-gray-400">لا توجد تعليقات حتى الآن.</p>`; return; }
-    list.innerHTML = reviews.map(r => `
-        <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-1">
-            <h4 class="font-bold text-sm text-gray-900">${r.name}</h4>
-            <p class="text-xs text-gray-600">${r.comment}</p>
-        </div>
-    `).join('');
+    if(reviews.length === 0) { list.innerHTML = `<p class="text-sm text-gray-400">لا توجد تقييمات أو تعليقات حتى الآن.</p>`; return; }
+    
+    list.innerHTML = reviews.map(r => {
+        const ratingNum = r.rating || 5;
+        const stars = '⭐'.repeat(ratingNum);
+        return `
+            <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-1">
+                <div class="flex items-center justify-between">
+                    <h4 class="font-bold text-sm text-gray-900">${r.name}</h4>
+                    <span class="text-xs text-amber-500">${stars}</span>
+                </div>
+                <p class="text-xs text-gray-600">${r.comment}</p>
+            </div>
+        `;
+    }).join('');
 }
 
 function renderAdminProductsList() {
@@ -527,7 +594,7 @@ function renderAdminReviewsList() {
     container.innerHTML = reviews.map(r => `
         <div class="py-3 flex items-center justify-between gap-4">
             <div>
-                <h4 class="font-bold text-sm text-gray-900">${r.name}</h4>
+                <h4 class="font-bold text-sm text-gray-900">${r.name} <span class="text-xs text-amber-500">(${r.rating || 5}⭐)</span></h4>
                 <p class="text-xs text-gray-600">${r.comment}</p>
             </div>
             <button onclick="deleteReview(${r.id})" class="px-3 py-1.5 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold">حذف التعليق</button>
