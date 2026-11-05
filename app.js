@@ -132,7 +132,7 @@ async function setupDashboard() {
     } else {
         document.getElementById('admin-role-badge').innerText = 'صلاحية: موظف (إضافة وإدارة توفر المنتجات فقط)';
         if(superPanel) superPanel.classList.add('hidden');
-        if(storeSettingsPanel) superPanel.classList.add('hidden');
+        if(storeSettingsPanel) storeSettingsPanel.classList.add('hidden');
         if(categoriesPanel) categoriesPanel.classList.add('hidden');
     }
 
@@ -292,7 +292,7 @@ function renderProductColorsTags() {
     `).join('');
 }
 
-// دالة عرض تفاصيل المنتج مع معالجة شاملة لمصفوفة الصور أو الصورة الفردية لضمان ظهور المعرض
+// دالة عرض تفاصيل المنتج مع دعم كامل لمعرض الصور المتعددة واستخراجها بدقة
 function openProductDetailModal(pId) {
     const p = products.find(prod => String(prod.id) === String(pId));
     if (!p) return;
@@ -300,18 +300,32 @@ function openProductDetailModal(pId) {
     const modalContent = document.getElementById('modal-product-content');
     if(!modalContent) return;
     
+    // استخراج مصفوفة الصور بشكل آمن ودقيق
     let imagesArr = [];
-    if (p.images && Array.isArray(p.images) && p.images.length > 0) {
-        imagesArr = p.images;
-    } else if (p.image_url) {
+    if (p.images) {
+        if (Array.isArray(p.images) && p.images.length > 0) {
+            imagesArr = p.images;
+        } else if (typeof p.images === 'string') {
+            try {
+                let parsed = JSON.parse(p.images);
+                if (Array.isArray(parsed) && parsed.length > 0) imagesArr = parsed;
+            } catch(e) {
+                imagesArr = [p.images];
+            }
+        }
+    }
+    
+    if (imagesArr.length === 0 && p.image_url) {
         imagesArr = [p.image_url];
-    } else {
+    }
+    
+    if (imagesArr.length === 0) {
         imagesArr = ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=600&auto=format&fit=crop'];
     }
     
     const mainImg = imagesArr[0];
 
-    // توليد الصور المصغرة للتنقل الفوري وتحديث الإطار النشط
+    // توليد الصور المصغرة للتنقل بينها بسلاسة
     const thumbsHTML = imagesArr.map((img, idx) => `
         <img src="${img}" onclick="
             document.getElementById('main-modal-img').src='${img}';
@@ -398,7 +412,14 @@ function addConfiguredToCart(pId) {
     const selectedSize = document.querySelector('input[name="modal_selected_size"]:checked')?.value || 'Free Size';
     const selectedColor = document.querySelector('input[name="modal_selected_color"]:checked')?.value || 'أساسي';
     
-    let imagesArr = (p.images && p.images.length > 0) ? p.images : [p.image_url];
+    let imagesArr = [];
+    if (p.images && Array.isArray(p.images) && p.images.length > 0) {
+        imagesArr = p.images;
+    } else if (p.image_url) {
+        imagesArr = [p.image_url];
+    } else {
+        imagesArr = ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=600&auto=format&fit=crop'];
+    }
 
     const cartItem = {
         id: p.id,
@@ -449,7 +470,7 @@ async function handleProductSubmit(e) {
             sizes: selectedSizes.length > 0 ? selectedSizes : ['Free Size'],
             colors: [...currentProductColors],
             image_url: uploadedUrls[0],
-            images: uploadedUrls,
+            images: uploadedUrls, // حفظ مصفوفة الروابط كاملة في قاعدة البيانات
             is_available: true
         };
 
@@ -775,7 +796,7 @@ function checkoutWhatsApp() {
         total += Number(item.price);
     });
     msg += `💳 طريقة الدفع: ${selectedPay}\n`;
-    msg += `💰 إجمالي المبلغ: ${total} ج.م`;
+    msg += `💰 إجمالي المبلغ: `${total} ج.م`;
 
     const cleanPhone = storeSettings.whatsapp.replace(/[^0-9]/g, '');
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
