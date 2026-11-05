@@ -132,7 +132,7 @@ async function setupDashboard() {
     } else {
         document.getElementById('admin-role-badge').innerText = 'صلاحية: موظف (إضافة وإدارة توفر المنتجات فقط)';
         if(superPanel) superPanel.classList.add('hidden');
-        if(storeSettingsPanel) storeSettingsPanel.classList.add('hidden');
+        if(storeSettingsPanel) superPanel.classList.add('hidden');
         if(categoriesPanel) categoriesPanel.classList.add('hidden');
     }
 
@@ -292,7 +292,7 @@ function renderProductColorsTags() {
     `).join('');
 }
 
-// دالة عرض تفاصيل المنتج مع دعم معرض الصور المتعددة بشكل تفاعلي تام
+// دالة عرض تفاصيل المنتج مع معالجة شاملة لمصفوفة الصور أو الصورة الفردية لضمان ظهور المعرض
 function openProductDetailModal(pId) {
     const p = products.find(prod => String(prod.id) === String(pId));
     if (!p) return;
@@ -311,7 +311,7 @@ function openProductDetailModal(pId) {
     
     const mainImg = imagesArr[0];
 
-    // توليد الصور المصغرة مع تحديث الصورة الرئيسية وإطار التحديد عند النقر عليها
+    // توليد الصور المصغرة للتنقل الفوري وتحديث الإطار النشط
     const thumbsHTML = imagesArr.map((img, idx) => `
         <img src="${img}" onclick="
             document.getElementById('main-modal-img').src='${img}';
