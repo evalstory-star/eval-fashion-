@@ -361,7 +361,10 @@ function openProductDetailModal(pId) {
                 <div>
                     <span class="text-xs font-bold px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-lg">${p.category}</span>
                     <h3 class="text-2xl font-black text-gray-900 mt-2">${p.name}</h3>
-                    <p class="text-emerald-800 font-black text-2xl mt-1">${p.price} ج.م</p>
+                    <div class="flex items-baseline gap-2 mt-1">
+                        <p class="text-emerald-800 font-black text-2xl">${p.price} ج.م</p>
+                        ${p.old_price ? `<p class="text-sm font-bold text-gray-400 line-through">${p.old_price} ج.م</p>` : ''}
+                    </div>
                 </div>
                 ${p.fabric ? `<p class="text-xs font-bold text-gray-500">الخامة المصنعة: <span class="text-gray-900">${p.fabric}</span></p>` : ''}
                 <p class="text-sm text-gray-600 leading-relaxed">${p.description || 'تصميم حصري من متجر EVAL بأرقى معايير الجودة.'}</p>
@@ -503,6 +506,83 @@ async function deleteProduct(id) {
     await _supabase.from('products').delete().eq('id', id);
     await fetchProducts(); 
     renderAdminProductsList();
+}
+
+// دالة فتح نافذة تعديل بيانات وسعر القطعة وإضافة الخصم
+function openEditProductModal(pId) {
+    const p = products.find(prod => String(prod.id) === String(pId));
+    if (!p) return;
+
+    let editModal = document.getElementById('edit-product-modal');
+    if (!editModal) {
+        editModal = document.createElement('div');
+        editModal.id = 'edit-product-modal';
+        editModal.className = 'fixed inset-0 bg-gray-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4';
+        document.body.appendChild(editModal);
+    }
+
+    editModal.innerHTML = `
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h3 class="font-black text-lg text-gray-900">تعديل القطعة والخصم: ${p.name}</h3>
+                <button onclick="document.getElementById('edit-product-modal').remove()" class="text-gray-400 hover:text-gray-700 font-bold text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="saveProductChanges(event, '${p.id}')" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">اسم القطعة:</label>
+                    <input type="text" id="edit-p-name" value="${p.name}" class="w-full p-3 border rounded-xl text-sm font-bold bg-gray-50" required>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">السعر الحالي (بعد الخصم):</label>
+                        <input type="number" step="0.01" id="edit-p-price" value="${p.price}" class="w-full p-3 border rounded-xl text-sm font-bold bg-gray-50" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">السعر القديم (قبل الخصم - اختياري):</label>
+                        <input type="number" step="0.01" id="edit-p-old-price" value="${p.old_price || ''}" placeholder="مثال: 850" class="w-full p-3 border rounded-xl text-sm font-bold bg-gray-50">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">الوصف:</label>
+                    <textarea id="edit-p-desc" rows="3" class="w-full p-3 border rounded-xl text-sm bg-gray-50">${p.description || ''}</textarea>
+                </div>
+                <div class="pt-3 flex gap-2">
+                    <button type="submit" class="flex-1 py-3 bg-emerald-800 text-white font-bold rounded-xl text-sm hover:bg-emerald-900 shadow">حفظ التعديلات</button>
+                    <button type="button" onclick="document.getElementById('edit-product-modal').remove()" class="py-3 px-5 bg-gray-100 text-gray-700 font-bold rounded-xl text-sm">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    `;
+    editModal.classList.remove('hidden');
+}
+
+// حفظ التعديلات مباشرة في Supabase
+async function saveProductChanges(e, pId) {
+    e.preventDefault();
+    const newName = document.getElementById('edit-p-name').value.trim();
+    const newPrice = parseFloat(document.getElementById('edit-p-price').value);
+    const oldPriceInput = document.getElementById('edit-p-old-price').value;
+    const newOldPrice = oldPriceInput ? parseFloat(oldPriceInput) : null;
+    const newDesc = document.getElementById('edit-p-desc').value.trim();
+
+    try {
+        const updateData = {
+            name: newName,
+            price: newPrice,
+            old_price: newOldPrice,
+            description: newDesc
+        };
+
+        const { error } = await _supabase.from('products').update(updateData).eq('id', pId);
+        if (error) throw error;
+
+        showToast("تم تحديث بيانات القطعة بنجاح!");
+        document.getElementById('edit-product-modal').remove();
+        await fetchProducts();
+        renderAdminProductsList();
+    } catch (err) {
+        alert("حدث خطأ أثناء التحديث: " + err.message);
+    }
 }
 
 async function submitReview(e) {
@@ -671,7 +751,10 @@ function renderProducts(filter = 'all') {
                     <span class="text-[10px] font-bold px-2 py-0.5 bg-emerald-50 text-emerald-800 rounded-md w-fit">${p.category}</span>
                     <h3 onclick="openProductDetailModal('${p.id}')" class="font-bold text-gray-900 text-sm line-clamp-1 cursor-pointer hover:text-emerald-800 transition-all">${p.name}</h3>
                     <div class="mt-auto pt-2 flex items-center justify-between border-t border-gray-50">
-                        <span class="font-black text-emerald-800 text-base">${p.price} ج.م</span>
+                        <div>
+                            <span class="font-black text-emerald-800 text-base">${p.price} ج.م</span>
+                            ${p.old_price ? `<span class="text-xs font-bold text-gray-400 line-through mr-1.5">${p.old_price} ج.م</span>` : ''}
+                        </div>
                         ${avail ? `<button onclick="openProductDetailModal('${p.id}')" class="p-2 bg-emerald-800 text-white rounded-xl hover:bg-emerald-900 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-eye"></i> عرض وتخصيص</button>` : '<span class="text-xs font-bold text-gray-400">غير متوفر</span>'}
                     </div>
                 </div>
@@ -711,14 +794,18 @@ function renderAdminProductsList() {
             firstImg = p.image_url;
         }
         return `
-            <div class="py-3 flex items-center justify-between gap-4">
+            <div class="py-3 flex items-center justify-between gap-4 border-b border-gray-100 last:border-0">
                 <div class="flex items-center gap-3">
                     <img src="${firstImg}" class="w-12 h-12 rounded-xl object-cover" alt="">
-                    <div><h4 class="font-bold text-sm text-gray-900">${p.name}</h4><p class="text-xs text-gray-500">${p.price} ج.م</p></div>
+                    <div>
+                        <h4 class="font-bold text-sm text-gray-900">${p.name}</h4>
+                        <p class="text-xs text-gray-500">${p.price} ج.م ${p.old_price ? `<span class="line-through text-rose-500 mr-1">${p.old_price} ج.م</span>` : ''}</p>
+                    </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="toggleProductAvailability(${p.id}, ${p.is_available !== false})" class="px-3 py-1.5 rounded-xl text-xs font-bold ${p.is_available !== false ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-800'}">${p.is_available !== false ? 'إيقاف' : 'تفعيل'}</button>
-                    ${currentUser.role === 'admin' ? `<button onclick="deleteProduct(${p.id})" class="p-2 text-rose-600"><i class="fa-solid fa-trash"></i></button>` : ''}
+                    <button onclick="openEditProductModal('${p.id}')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold">تعديل / خصم</button>
+                    <button onclick="toggleProductAvailability('${p.id}', ${p.is_available !== false})" class="px-3 py-1.5 rounded-xl text-xs font-bold ${p.is_available !== false ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-800'}">${p.is_available !== false ? 'إيقاف' : 'تفعيل'}</button>
+                    ${currentUser.role === 'admin' ? `<button onclick="deleteProduct('${p.id}')" class="p-2 text-rose-600"><i class="fa-solid fa-trash"></i></button>` : ''}
                 </div>
             </div>
         `;
@@ -738,7 +825,7 @@ function renderAdminReviewsList() {
                 <h4 class="font-bold text-sm text-gray-900">${r.name} <span class="text-xs text-amber-500">(${r.rating || 5}⭐)</span></h4>
                 <p class="text-xs text-gray-600">${r.comment}</p>
             </div>
-            ${currentUser.role === 'admin' ? `<button onclick="deleteReview(${r.id})" class="px-3 py-1.5 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold">حذف التعليق</button>` : ''}
+            ${currentUser.role === 'admin' ? `<button onclick="deleteReview('${r.id}')" class="px-3 py-1.5 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold">حذف التعليق</button>` : ''}
         </div>
     `).join('');
 }
