@@ -23,7 +23,6 @@
         }
         .hero-bg {
             animation: subtleZoom 15s infinite ease-in-out;
-            background-image: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1600&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
         }
@@ -83,7 +82,7 @@
 
         <!-- Store View -->
         <section id="view-store" class="space-y-8">
-            <div class="hero-bg rounded-3xl p-10 sm:p-20 text-white shadow-2xl relative overflow-hidden text-center flex flex-col items-center justify-center space-y-4">
+            <div id="hero-banner-section" class="hero-bg rounded-3xl p-10 sm:p-20 text-white shadow-2xl relative overflow-hidden text-center flex flex-col items-center justify-center space-y-4">
                 <span class="px-4 py-1.5 bg-emerald-500/30 text-emerald-200 text-xs font-bold rounded-full border border-emerald-400/40 backdrop-blur-md">موسم الأزياء الراقية</span>
                 <h2 class="text-4xl sm:text-7xl font-black tracking-widest text-white drop-shadow-lg">EVAL</h2>
                 <p class="text-gray-200 text-sm sm:text-lg max-w-lg font-medium">تصاميم حصرية وخامات فريدة صنعت خصيصاً لتناسب ذوقك الراقي وتمنحك إطلالة لا تُنسى.</p>
@@ -241,12 +240,16 @@
             <!-- Store Settings -->
             <div id="store-settings-panel" class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-6 space-y-4 shadow-sm">
                 <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-emerald-700"></i> إعدادات المتجر والتواصل والشريط العلوي
+                    <i class="fa-solid fa-sliders text-emerald-700"></i> إعدادات المتجر والتواصل والشريط العلوي وصورة الغلاف
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="col-span-full bg-white p-4 rounded-xl border">
                         <label class="block text-xs font-bold text-gray-800 mb-1">نص الشريط العلوي المتحرك (اتركه فارغاً ليختفي الشريط تماماً):</label>
                         <input type="text" id="admin-announcement" class="w-full p-3 rounded-xl border text-sm font-semibold bg-gray-50" placeholder="مثال: صُنعت كل قطعة بكل حب وإتقان لتليق بجمالك سيدتي">
+                    </div>
+                    <div class="col-span-full bg-white p-4 rounded-xl border">
+                        <label class="block text-xs font-bold text-gray-800 mb-1">رابط صورة الغلاف الرئيسي (Hero Banner Image URL):</label>
+                        <input type="text" id="admin-hero-bg" class="w-full p-3 rounded-xl border text-sm font-semibold bg-gray-50" placeholder="ضع رابط الصورة هنا (أو رابط Unsplash/صورة مرفوعة)">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">رقم الواتساب للطلبات</label>
@@ -280,7 +283,7 @@
                         <textarea id="admin-contact-text" rows="3" class="w-full p-3 rounded-xl border text-sm bg-white"></textarea>
                     </div>
                 </div>
-                <button onclick="saveStoreSettings()" class="px-6 py-2.5 bg-emerald-800 text-white font-bold text-sm rounded-xl hover:bg-emerald-900 shadow-sm">حفظ الإعدادات والشريط</button>
+                <button onclick="saveStoreSettings()" class="px-6 py-2.5 bg-emerald-800 text-white font-bold text-sm rounded-xl hover:bg-emerald-900 shadow-sm">حفظ الإعدادات والشريط والغلاف</button>
             </div>
 
             <!-- Add Product Form -->
