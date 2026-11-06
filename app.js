@@ -14,6 +14,9 @@ let currentProductColors = ['أسود', 'بيج', 'أبيض'];
 let storeSettings = {
     announcement: 'أناقة تليق بك',
     heroBg: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1600&auto=format&fit=crop',
+    heroBadge: 'موسم الأزياء الراقية',
+    heroTitle: 'EVAL',
+    heroDesc: 'تصاميم حصرية وخامات فريدة صنعت خصيصاً لتناسب ذوقك الراقي وتمنحك إطلالة لا تُنسى.',
     whatsapp: '201108396536',
     fb: 'https://facebook.com',
     ig: 'https://instagram.com',
@@ -68,6 +71,9 @@ async function fetchStoreSettings() {
         const { data, error } = await _supabase.from('site_settings').select('*').limit(1).single();
         if (data) {
             storeSettings.heroBg = data.hero_bg || storeSettings.heroBg;
+            storeSettings.heroBadge = data.hero_badge || storeSettings.heroBadge;
+            storeSettings.heroTitle = data.hero_title || storeSettings.heroTitle;
+            storeSettings.heroDesc = data.hero_desc || storeSettings.heroDesc;
             storeSettings.announcement = data.announcement || '';
             storeSettings.whatsapp = data.whatsapp || storeSettings.whatsapp;
             storeSettings.fb = data.facebook || storeSettings.fb;
@@ -78,11 +84,16 @@ async function fetchStoreSettings() {
             // تعبئة حقول لوحة التحكم
             if(document.getElementById('admin-announcement')) document.getElementById('admin-announcement').value = storeSettings.announcement;
             if(document.getElementById('admin-hero-bg')) document.getElementById('admin-hero-bg').value = storeSettings.heroBg;
+            if(document.getElementById('admin-hero-badge')) document.getElementById('admin-hero-badge').value = storeSettings.heroBadge;
+            if(document.getElementById('admin-hero-title')) document.getElementById('admin-hero-title').value = storeSettings.heroTitle;
+            if(document.getElementById('admin-hero-desc')) document.getElementById('admin-hero-desc').value = storeSettings.heroDesc;
             if(document.getElementById('admin-whatsapp')) document.getElementById('admin-whatsapp').value = storeSettings.whatsapp;
             if(document.getElementById('admin-fb')) document.getElementById('admin-fb').value = storeSettings.fb;
             if(document.getElementById('admin-ig')) document.getElementById('admin-ig').value = storeSettings.ig;
             if(document.getElementById('admin-about-text')) document.getElementById('admin-about-text').value = storeSettings.aboutText;
             if(document.getElementById('admin-contact-text')) document.getElementById('admin-contact-text').value = storeSettings.contactText;
+            
+            renderDynamicContent();
         }
     } catch (err) {
         console.error("Error fetching store settings:", err);
@@ -262,6 +273,11 @@ function renderDynamicContent() {
         const bgUrl = storeSettings.heroBg && storeSettings.heroBg.trim() !== '' ? storeSettings.heroBg : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1600&auto=format&fit=crop';
         heroSection.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('${bgUrl}')`;
     }
+
+    // تحديث النصوص الخاصة بالغلاف
+    if(document.getElementById('hero-display-badge')) document.getElementById('hero-display-badge').innerText = storeSettings.heroBadge;
+    if(document.getElementById('hero-display-title')) document.getElementById('hero-display-title').innerText = storeSettings.heroTitle;
+    if(document.getElementById('hero-display-desc')) document.getElementById('hero-display-desc').innerText = storeSettings.heroDesc;
 
     const aboutDiv = document.getElementById('dynamic-about-content');
     if(aboutDiv) aboutDiv.innerHTML = `<p>${storeSettings.aboutText.replace(/\n/g, '<br>')}</p>`;
@@ -662,31 +678,58 @@ function deleteCategory(cat) {
 async function saveStoreSettings() {
     if(currentUser.role !== 'admin') { alert("عذراً، تعديل إعدادات المتجر مقتصر على المدير الرئيسي فقط!"); return; }
     
-    const newHeroBg = document.getElementById('admin-hero-bg').value.trim();
-    const newAnnouncement = document.getElementById('admin-announcement').value.trim();
-    const newWhatsapp = document.getElementById('admin-whatsapp').value.trim();
-    const newFb = document.getElementById('admin-fb').value.trim();
-    const newIg = document.getElementById('admin-ig').value.trim();
-    const newAbout = document.getElementById('admin-about-text').value.trim();
-    const newContact = document.getElementById('admin-contact-text').value.trim();
-
-    storeSettings.heroBg = newHeroBg;
-    storeSettings.announcement = newAnnouncement;
-    storeSettings.whatsapp = newWhatsapp;
-    storeSettings.fb = newFb;
-    storeSettings.ig = newIg;
-    storeSettings.aboutText = newAbout;
-    storeSettings.contactText = newContact;
-    storeSettings.payments.cod = document.getElementById('pay-cod').checked;
-    storeSettings.payments.instapay = document.getElementById('pay-instapay').checked;
-    storeSettings.payments.visa = document.getElementById('pay-visa').checked;
-    storeSettings.payments.bank = document.getElementById('pay-bank').checked;
+    let heroBgUrl = document.getElementById('admin-hero-bg').value.trim();
+    const heroFileInput = document.getElementById('admin-hero-file');
+    
+    showToast("جاري حفظ الإعدادات والغلاف والنصوص...");
 
     try {
+        // رفع صورة الغلاف من الموبايل إذا تم اختيارها
+        if (heroFileInput && heroFileInput.files.length > 0) {
+            const file = heroFileInput.files[0];
+            const fileName = `hero_${Date.now()}.${file.name.split('.').pop()}`;
+            
+            const { error: uploadError } = await _supabase.storage.from('product-images').upload(fileName, file);
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = _supabase.storage.from('product-images').getPublicUrl(fileName);
+            if (urlData && urlData.publicUrl) {
+                heroBgUrl = urlData.publicUrl;
+            }
+        }
+
+        const newHeroBadge = document.getElementById('admin-hero-badge').value.trim();
+        const newHeroTitle = document.getElementById('admin-hero-title').value.trim();
+        const newHeroDesc = document.getElementById('admin-hero-desc').value.trim();
+        const newAnnouncement = document.getElementById('admin-announcement').value.trim();
+        const newWhatsapp = document.getElementById('admin-whatsapp').value.trim();
+        const newFb = document.getElementById('admin-fb').value.trim();
+        const newIg = document.getElementById('admin-ig').value.trim();
+        const newAbout = document.getElementById('admin-about-text').value.trim();
+        const newContact = document.getElementById('admin-contact-text').value.trim();
+
+        storeSettings.heroBg = heroBgUrl;
+        storeSettings.heroBadge = newHeroBadge;
+        storeSettings.heroTitle = newHeroTitle;
+        storeSettings.heroDesc = newHeroDesc;
+        storeSettings.announcement = newAnnouncement;
+        storeSettings.whatsapp = newWhatsapp;
+        storeSettings.fb = newFb;
+        storeSettings.ig = newIg;
+        storeSettings.aboutText = newAbout;
+        storeSettings.contactText = newContact;
+        storeSettings.payments.cod = document.getElementById('pay-cod').checked;
+        storeSettings.payments.instapay = document.getElementById('pay-instapay').checked;
+        storeSettings.payments.visa = document.getElementById('pay-visa').checked;
+        storeSettings.payments.bank = document.getElementById('pay-bank').checked;
+
         const { data: existing } = await _supabase.from('site_settings').select('id').limit(1).single();
         if (existing) {
             await _supabase.from('site_settings').update({
-                hero_bg: newHeroBg,
+                hero_bg: heroBgUrl,
+                hero_badge: newHeroBadge,
+                hero_title: newHeroTitle,
+                hero_desc: newHeroDesc,
                 announcement: newAnnouncement,
                 whatsapp: newWhatsapp,
                 facebook: newFb,
@@ -698,9 +741,11 @@ async function saveStoreSettings() {
         }
 
         renderDynamicContent();
-        showToast("تم حفظ الإعدادات والغلاف في قاعدة البيانات بنجاح!");
+        showToast("تم حفظ الإعدادات والغلاف والنصوص في قاعدة البيانات بنجاح!");
+        if(heroFileInput) heroFileInput.value = '';
+        if(document.getElementById('admin-hero-bg')) document.getElementById('admin-hero-bg').value = heroBgUrl;
     } catch (err) {
-        alert("حدث خطأ أثناء الحفظ في قاعدة البيانات: " + err.message);
+        alert("حدث خطأ أثناء الحفظ: " + err.message);
     }
 }
 
