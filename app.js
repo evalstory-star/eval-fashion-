@@ -25,6 +25,7 @@ let storeSettings = {
 window.addEventListener('DOMContentLoaded', async () => {
     try {
         loadLocalState();
+        await fetchStoreSettings();
         await fetchProducts();
         await fetchReviews();
         renderCategories();
@@ -53,30 +54,39 @@ function showToast(msg) {
 function loadLocalState() {
     const savedCats = localStorage.getItem('eval_categories');
     if (savedCats) categories = JSON.parse(savedCats);
-    const savedSettings = localStorage.getItem('eval_settings');
-    if (savedSettings) storeSettings = JSON.parse(savedSettings);
     const savedCart = localStorage.getItem('eval_cart');
     if (savedCart) cart = JSON.parse(savedCart);
-
-    const annInput = document.getElementById('admin-announcement');
-    if(annInput) annInput.value = storeSettings.announcement || '';
-    const heroBgInput = document.getElementById('admin-hero-bg');
-    if(heroBgInput) heroBgInput.value = storeSettings.heroBg || '';
-    const waInput = document.getElementById('admin-whatsapp');
-    if(waInput) waInput.value = storeSettings.whatsapp;
-    const fbInput = document.getElementById('admin-fb');
-    if(fbInput) fbInput.value = storeSettings.fb;
-    const igInput = document.getElementById('admin-ig');
-    if(igInput) igInput.value = storeSettings.ig;
-    const aboutInput = document.getElementById('admin-about-text');
-    if(aboutInput) aboutInput.value = storeSettings.aboutText;
-    const contactInput = document.getElementById('admin-contact-text');
-    if(contactInput) contactInput.value = storeSettings.contactText;
     
     if(document.getElementById('pay-cod')) document.getElementById('pay-cod').checked = storeSettings.payments.cod;
     if(document.getElementById('pay-instapay')) document.getElementById('pay-instapay').checked = storeSettings.payments.instapay;
     if(document.getElementById('pay-visa')) document.getElementById('pay-visa').checked = storeSettings.payments.visa;
     if(document.getElementById('pay-bank')) document.getElementById('pay-bank').checked = storeSettings.payments.bank;
+}
+
+async function fetchStoreSettings() {
+    try {
+        const { data, error } = await _supabase.from('site_settings').select('*').limit(1).single();
+        if (data) {
+            storeSettings.heroBg = data.hero_bg || storeSettings.heroBg;
+            storeSettings.announcement = data.announcement || '';
+            storeSettings.whatsapp = data.whatsapp || storeSettings.whatsapp;
+            storeSettings.fb = data.facebook || storeSettings.fb;
+            storeSettings.ig = data.instagram || storeSettings.ig;
+            storeSettings.aboutText = data.about_text || storeSettings.aboutText;
+            storeSettings.contactText = data.contact_text || storeSettings.contactText;
+
+            // تعبئة حقول لوحة التحكم
+            if(document.getElementById('admin-announcement')) document.getElementById('admin-announcement').value = storeSettings.announcement;
+            if(document.getElementById('admin-hero-bg')) document.getElementById('admin-hero-bg').value = storeSettings.heroBg;
+            if(document.getElementById('admin-whatsapp')) document.getElementById('admin-whatsapp').value = storeSettings.whatsapp;
+            if(document.getElementById('admin-fb')) document.getElementById('admin-fb').value = storeSettings.fb;
+            if(document.getElementById('admin-ig')) document.getElementById('admin-ig').value = storeSettings.ig;
+            if(document.getElementById('admin-about-text')) document.getElementById('admin-about-text').value = storeSettings.aboutText;
+            if(document.getElementById('admin-contact-text')) document.getElementById('admin-contact-text').value = storeSettings.contactText;
+        }
+    } catch (err) {
+        console.error("Error fetching store settings:", err);
+    }
 }
 
 function switchTab(tab) {
@@ -649,23 +659,49 @@ function deleteCategory(cat) {
     showToast("تم حذف القسم!");
 }
 
-function saveStoreSettings() {
+async function saveStoreSettings() {
     if(currentUser.role !== 'admin') { alert("عذراً، تعديل إعدادات المتجر مقتصر على المدير الرئيسي فقط!"); return; }
-    storeSettings.announcement = document.getElementById('admin-announcement').value.trim();
-    storeSettings.heroBg = document.getElementById('admin-hero-bg').value.trim();
-    storeSettings.whatsapp = document.getElementById('admin-whatsapp').value.trim();
-    storeSettings.fb = document.getElementById('admin-fb').value.trim();
-    storeSettings.ig = document.getElementById('admin-ig').value.trim();
-    storeSettings.aboutText = document.getElementById('admin-about-text').value.trim();
-    storeSettings.contactText = document.getElementById('admin-contact-text').value.trim();
+    
+    const newHeroBg = document.getElementById('admin-hero-bg').value.trim();
+    const newAnnouncement = document.getElementById('admin-announcement').value.trim();
+    const newWhatsapp = document.getElementById('admin-whatsapp').value.trim();
+    const newFb = document.getElementById('admin-fb').value.trim();
+    const newIg = document.getElementById('admin-ig').value.trim();
+    const newAbout = document.getElementById('admin-about-text').value.trim();
+    const newContact = document.getElementById('admin-contact-text').value.trim();
+
+    storeSettings.heroBg = newHeroBg;
+    storeSettings.announcement = newAnnouncement;
+    storeSettings.whatsapp = newWhatsapp;
+    storeSettings.fb = newFb;
+    storeSettings.ig = newIg;
+    storeSettings.aboutText = newAbout;
+    storeSettings.contactText = newContact;
     storeSettings.payments.cod = document.getElementById('pay-cod').checked;
     storeSettings.payments.instapay = document.getElementById('pay-instapay').checked;
     storeSettings.payments.visa = document.getElementById('pay-visa').checked;
     storeSettings.payments.bank = document.getElementById('pay-bank').checked;
 
-    localStorage.setItem('eval_settings', JSON.stringify(storeSettings));
-    renderDynamicContent();
-    showToast("تم حفظ الإعدادات والشريط وصورة الغلاف بنجاح!");
+    try {
+        const { data: existing } = await _supabase.from('site_settings').select('id').limit(1).single();
+        if (existing) {
+            await _supabase.from('site_settings').update({
+                hero_bg: newHeroBg,
+                announcement: newAnnouncement,
+                whatsapp: newWhatsapp,
+                facebook: newFb,
+                instagram: newIg,
+                about_text: newAbout,
+                contact_text: newContact,
+                updated_at: new Date()
+            }).eq('id', existing.id);
+        }
+
+        renderDynamicContent();
+        showToast("تم حفظ الإعدادات والغلاف في قاعدة البيانات بنجاح!");
+    } catch (err) {
+        alert("حدث خطأ أثناء الحفظ في قاعدة البيانات: " + err.message);
+    }
 }
 
 function renderCategories() {
