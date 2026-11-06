@@ -18,8 +18,8 @@ let storeSettings = {
     heroTitle: 'EVAL',
     heroDesc: 'تصاميم حصرية وخامات فريدة صنعت خصيصاً لتناسب ذوقك الراقي وتمنحك إطلالة لا تُنسى.',
     whatsapp: '201108396536',
-    fb: 'https://facebook.com',
-    ig: 'https://instagram.com',
+    fb: 'https://www.facebook.com/share/1GwJYnjzeE/',
+    ig: 'https://www.instagram.com/eval_store_fashion?psln=ejN5dTl4czhxdDE=',
     aboutText: 'متجر EVAL يقدم أرقى تصاميم الأزياء المصنوعة بعناية لتلبي ذوقك الفريد.',
     contactText: 'للاستفسارات والطلب المباشر، يرافقكم فريقنا عبر الواتساب والهاتف المتاح طوال أيام الأسبوع.',
     payments: { cod: true, instapay: true, visa: true, bank: true }
@@ -68,7 +68,7 @@ function loadLocalState() {
 
 async function fetchStoreSettings() {
     try {
-        const { data, error } = await _supabase.from('site_settings').select('*').limit(1).single();
+        const { data, error } = await _supabase.from('site_settings').select('*').limit(1).maybeSingle();
         if (data) {
             storeSettings.heroBg = data.hero_bg || storeSettings.heroBg;
             storeSettings.heroBadge = data.hero_badge || storeSettings.heroBadge;
@@ -678,7 +678,7 @@ function deleteCategory(cat) {
 async function saveStoreSettings() {
     if(currentUser.role !== 'admin') { alert("عذراً، تعديل إعدادات المتجر مقتصر على المدير الرئيسي فقط!"); return; }
     
-    let heroBgUrl = document.getElementById('admin-hero-bg').value.trim();
+    let heroBgUrl = document.getElementById('admin-hero-bg') ? document.getElementById('admin-hero-bg').value.trim() : storeSettings.heroBg;
     const heroFileInput = document.getElementById('admin-hero-file');
     
     showToast("جاري حفظ الإعدادات والغلاف والنصوص...");
@@ -698,15 +698,15 @@ async function saveStoreSettings() {
             }
         }
 
-        const newHeroBadge = document.getElementById('admin-hero-badge').value.trim();
-        const newHeroTitle = document.getElementById('admin-hero-title').value.trim();
-        const newHeroDesc = document.getElementById('admin-hero-desc').value.trim();
-        const newAnnouncement = document.getElementById('admin-announcement').value.trim();
-        const newWhatsapp = document.getElementById('admin-whatsapp').value.trim();
-        const newFb = document.getElementById('admin-fb').value.trim();
-        const newIg = document.getElementById('admin-ig').value.trim();
-        const newAbout = document.getElementById('admin-about-text').value.trim();
-        const newContact = document.getElementById('admin-contact-text').value.trim();
+        const newHeroBadge = document.getElementById('admin-hero-badge') ? document.getElementById('admin-hero-badge').value.trim() : storeSettings.heroBadge;
+        const newHeroTitle = document.getElementById('admin-hero-title') ? document.getElementById('admin-hero-title').value.trim() : storeSettings.heroTitle;
+        const newHeroDesc = document.getElementById('admin-hero-desc') ? document.getElementById('admin-hero-desc').value.trim() : storeSettings.heroDesc;
+        const newAnnouncement = document.getElementById('admin-announcement') ? document.getElementById('admin-announcement').value.trim() : storeSettings.announcement;
+        const newWhatsapp = document.getElementById('admin-whatsapp') ? document.getElementById('admin-whatsapp').value.trim() : storeSettings.whatsapp;
+        const newFb = document.getElementById('admin-fb') ? document.getElementById('admin-fb').value.trim() : storeSettings.fb;
+        const newIg = document.getElementById('admin-ig') ? document.getElementById('admin-ig').value.trim() : storeSettings.ig;
+        const newAbout = document.getElementById('admin-about-text') ? document.getElementById('admin-about-text').value.trim() : storeSettings.aboutText;
+        const newContact = document.getElementById('admin-contact-text') ? document.getElementById('admin-contact-text').value.trim() : storeSettings.contactText;
 
         storeSettings.heroBg = heroBgUrl;
         storeSettings.heroBadge = newHeroBadge;
@@ -718,30 +718,37 @@ async function saveStoreSettings() {
         storeSettings.ig = newIg;
         storeSettings.aboutText = newAbout;
         storeSettings.contactText = newContact;
-        storeSettings.payments.cod = document.getElementById('pay-cod').checked;
-        storeSettings.payments.instapay = document.getElementById('pay-instapay').checked;
-        storeSettings.payments.visa = document.getElementById('pay-visa').checked;
-        storeSettings.payments.bank = document.getElementById('pay-bank').checked;
+        if(document.getElementById('pay-cod')) storeSettings.payments.cod = document.getElementById('pay-cod').checked;
+        if(document.getElementById('pay-instapay')) storeSettings.payments.instapay = document.getElementById('pay-instapay').checked;
+        if(document.getElementById('pay-visa')) storeSettings.payments.visa = document.getElementById('pay-visa').checked;
+        if(document.getElementById('pay-bank')) storeSettings.payments.bank = document.getElementById('pay-bank').checked;
 
-        const { data: existing } = await _supabase.from('site_settings').select('id').limit(1).single();
-        if (existing) {
-            await _supabase.from('site_settings').update({
-                hero_bg: heroBgUrl,
-                hero_badge: newHeroBadge,
-                hero_title: newHeroTitle,
-                hero_desc: newHeroDesc,
-                announcement: newAnnouncement,
-                whatsapp: newWhatsapp,
-                facebook: newFb,
-                instagram: newIg,
-                about_text: newAbout,
-                contact_text: newContact,
-                updated_at: new Date()
-            }).eq('id', existing.id);
+        const payload = {
+            hero_bg: heroBgUrl,
+            hero_badge: newHeroBadge,
+            hero_title: newHeroTitle,
+            hero_desc: newHeroDesc,
+            announcement: newAnnouncement,
+            whatsapp: newWhatsapp,
+            facebook: newFb,
+            instagram: newIg,
+            about_text: newAbout,
+            contact_text: newContact,
+            updated_at: new Date()
+        };
+
+        const { data: existing, error: fetchErr } = await _supabase.from('site_settings').select('id').limit(1).maybeSingle();
+        
+        if (existing && existing.id) {
+            const { error: updateErr } = await _supabase.from('site_settings').update(payload).eq('id', existing.id);
+            if (updateErr) throw updateErr;
+        } else {
+            const { error: insertErr } = await _supabase.from('site_settings').insert([payload]);
+            if (insertErr) throw insertErr;
         }
 
         renderDynamicContent();
-        showToast("تم حفظ الإعدادات والغلاف والنصوص في قاعدة البيانات بنجاح!");
+        showToast("تم حفظ وتثبيت الإعدادات والغلاف بنجاح دائم!");
         if(heroFileInput) heroFileInput.value = '';
         if(document.getElementById('admin-hero-bg')) document.getElementById('admin-hero-bg').value = heroBgUrl;
     } catch (err) {
