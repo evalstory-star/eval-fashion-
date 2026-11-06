@@ -13,6 +13,7 @@ let currentProductColors = ['أسود', 'بيج', 'أبيض'];
 
 let storeSettings = {
     announcement: 'أناقة تليق بك',
+    heroBg: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1600&auto=format&fit=crop',
     whatsapp: '201108396536',
     fb: 'https://facebook.com',
     ig: 'https://instagram.com',
@@ -59,6 +60,8 @@ function loadLocalState() {
 
     const annInput = document.getElementById('admin-announcement');
     if(annInput) annInput.value = storeSettings.announcement || '';
+    const heroBgInput = document.getElementById('admin-hero-bg');
+    if(heroBgInput) heroBgInput.value = storeSettings.heroBg || '';
     const waInput = document.getElementById('admin-whatsapp');
     if(waInput) waInput.value = storeSettings.whatsapp;
     const fbInput = document.getElementById('admin-fb');
@@ -242,6 +245,12 @@ function renderDynamicContent() {
         } else {
             bar.classList.add('hidden');
         }
+    }
+
+    const heroSection = document.getElementById('hero-banner-section');
+    if(heroSection) {
+        const bgUrl = storeSettings.heroBg && storeSettings.heroBg.trim() !== '' ? storeSettings.heroBg : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1600&auto=format&fit=crop';
+        heroSection.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('${bgUrl}')`;
     }
 
     const aboutDiv = document.getElementById('dynamic-about-content');
@@ -508,7 +517,6 @@ async function deleteProduct(id) {
     renderAdminProductsList();
 }
 
-// دالة فتح نافذة تعديل بيانات وسعر القطعة وإضافة الخصم
 function openEditProductModal(pId) {
     const p = products.find(prod => String(prod.id) === String(pId));
     if (!p) return;
@@ -556,7 +564,6 @@ function openEditProductModal(pId) {
     editModal.classList.remove('hidden');
 }
 
-// حفظ التعديلات مباشرة في Supabase
 async function saveProductChanges(e, pId) {
     e.preventDefault();
     const newName = document.getElementById('edit-p-name').value.trim();
@@ -645,6 +652,7 @@ function deleteCategory(cat) {
 function saveStoreSettings() {
     if(currentUser.role !== 'admin') { alert("عذراً، تعديل إعدادات المتجر مقتصر على المدير الرئيسي فقط!"); return; }
     storeSettings.announcement = document.getElementById('admin-announcement').value.trim();
+    storeSettings.heroBg = document.getElementById('admin-hero-bg').value.trim();
     storeSettings.whatsapp = document.getElementById('admin-whatsapp').value.trim();
     storeSettings.fb = document.getElementById('admin-fb').value.trim();
     storeSettings.ig = document.getElementById('admin-ig').value.trim();
@@ -657,7 +665,7 @@ function saveStoreSettings() {
 
     localStorage.setItem('eval_settings', JSON.stringify(storeSettings));
     renderDynamicContent();
-    showToast("تم حفظ الإعدادات والشريط بنجاح!");
+    showToast("تم حفظ الإعدادات والشريط وصورة الغلاف بنجاح!");
 }
 
 function renderCategories() {
