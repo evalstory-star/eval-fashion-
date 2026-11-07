@@ -380,7 +380,7 @@
         </div>
     </footer>
 
-    <!-- Auth Modal (محدث ليعتمد على البريد الإلكتروني الإداري الآمن) -->
+    <!-- Auth Modal (نافذة تسجيل الدخول النظيفة تماماً) -->
     <div id="auth-modal" class="fixed inset-0 bg-gray-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl p-8 max-w-md w-full space-y-6 shadow-2xl relative">
             <button onclick="closeAuthModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
@@ -392,13 +392,13 @@
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">البريد الإلكتروني (Email):</label>
-                    <input type="email" id="login-email" required class="w-full p-3 border rounded-xl text-sm font-bold bg-gray-50" placeholder="ibrahim.a.habo1.552.eval@eval.com">
+                    <input type="email" id="login-email" required class="w-full p-3 border rounded-xl text-sm font-bold bg-gray-50 text-gray-800" placeholder="أدخل البريد الإلكتروني الإداري">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">كلمة المرور:</label>
-                    <input type="password" id="login-pass" required class="w-full p-3 border rounded-xl text-sm" placeholder="••••••••">
+                    <input type="password" id="login-pass" required class="w-full p-3 border rounded-xl text-sm font-bold bg-gray-50 text-gray-800" placeholder="••••••••">
                 </div>
-                <button type="submit" class="w-full py-3 bg-emerald-800 text-white font-bold rounded-xl hover:bg-emerald-900 shadow-md">دخول آمن للنظام</button>
+                <button type="submit" class="w-full py-3.5 bg-emerald-800 text-white font-bold rounded-xl hover:bg-emerald-900 shadow-md transition-all text-sm">دخول آمن للنظام</button>
             </form>
         </div>
     </div>
