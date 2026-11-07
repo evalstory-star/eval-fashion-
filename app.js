@@ -12,11 +12,11 @@ let currentCategoryFilter = 'all';
 let currentProductColors = ['أسود', 'بيج', 'أبيض'];
 
 let storeSettings = {
-    announcement: 'أناقة تليق بك',
+    announcement: '✨ خصم حصري لفترة محدودة على تشكيلة الموسم الجديد - الشحن مجاني للطلبات الكبرى',
     heroBg: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1600&auto=format&fit=crop',
-    heroBadge: 'موسم الأزياء الراقية',
+    heroBadge: 'موسم الأزياء الراقية 2026',
     heroTitle: 'EVAL',
-    heroDesc: 'تصاميم حصرية وخامات فريدة صنعت خصيصاً لتناسب ذوقك الراقي وتمنحك إطلالة لا تُنسى.',
+    heroDesc: 'تصاميم حصرية وخامات فريدة صنعت خصيصاً لتناسب ذوقك الراقي وتمنحك إطلالة استثنائية لا تُنسى.',
     whatsapp: '201108396536',
     fb: 'https://www.facebook.com/share/1GwJYnjzeE/',
     ig: 'https://www.instagram.com/eval_store_fashion?psln=ejN5dTl4czhxdDE=',
@@ -270,7 +270,7 @@ function renderDynamicContent() {
     const heroSection = document.getElementById('hero-banner-section');
     if(heroSection) {
         const bgUrl = storeSettings.heroBg && storeSettings.heroBg.trim() !== '' ? storeSettings.heroBg : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1600&auto=format&fit=crop';
-        heroSection.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('${bgUrl}')`;
+        heroSection.style.backgroundImage = `linear-gradient(to bottom, rgba(5,5,5,0.45), rgba(5,5,5,0.75)), url('${bgUrl}')`;
     }
 
     if(document.getElementById('hero-display-badge')) document.getElementById('hero-display-badge').innerText = storeSettings.heroBadge;
@@ -322,7 +322,7 @@ function renderProductColorsTags() {
         return;
     }
     container.innerHTML = currentProductColors.map(c => `
-        <span class="inline-flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl text-xs font-bold text-gray-800 border shadow-sm">
+        <span class="inline-flex items-center gap-1.5 bg-stone-100 px-3 py-1.5 rounded-xl text-xs font-bold text-stone-800 border border-stone-200 shadow-sm">
             ${c}
             <button type="button" onclick="removeProductColor('${c}')" class="text-rose-500 hover:text-rose-700 ml-1"><i class="fa-solid fa-xmark"></i></button>
         </span>
@@ -363,61 +363,61 @@ function openProductDetailModal(pId) {
     const thumbsHTML = imagesArr.map((img, idx) => `
         <img src="${img}" onclick="
             document.getElementById('main-modal-img').src='${img}';
-            document.querySelectorAll('.modal-thumb').forEach(t => t.classList.remove('border-2', 'border-emerald-800'));
-            this.classList.add('border-2', 'border-emerald-800');
-        " class="modal-thumb w-16 h-16 object-cover rounded-xl border cursor-pointer hover:border-emerald-800 transition-all ${idx === 0 ? 'border-2 border-emerald-800' : ''}" alt="thumb">
+            document.querySelectorAll('.modal-thumb').forEach(t => t.classList.remove('border-2', 'border-stone-900'));
+            this.classList.add('border-2', 'border-stone-900');
+        " class="modal-thumb w-16 h-16 object-cover rounded-xl border cursor-pointer hover:border-stone-900 transition-all ${idx === 0 ? 'border-2 border-stone-900' : ''}" alt="thumb">
     `).join('');
 
     const sizesArr = (p.sizes && p.sizes.length) ? p.sizes : ['Free Size'];
     const sizesHTML = sizesArr.map((s, idx) => `
-        <label class="flex items-center gap-1.5 px-3 py-2 border rounded-xl cursor-pointer text-xs font-bold hover:bg-emerald-50">
-            <input type="radio" name="modal_selected_size" value="${s}" ${idx === 0 ? 'checked' : ''}>
+        <label class="flex items-center gap-1.5 px-3.5 py-2.5 border rounded-xl cursor-pointer text-xs font-bold hover:bg-stone-50 transition-all">
+            <input type="radio" name="modal_selected_size" value="${s}" ${idx === 0 ? 'checked' : ''} class="accent-stone-900">
             ${s}
         </label>
     `).join('');
 
     const colorsArr = (p.colors && p.colors.length) ? p.colors : ['أساسي'];
     const colorsHTML = colorsArr.map((c, idx) => `
-        <label class="flex items-center gap-1.5 px-3 py-2 border rounded-xl cursor-pointer text-xs font-bold hover:bg-emerald-50">
-            <input type="radio" name="modal_selected_color" value="${c}" ${idx === 0 ? 'checked' : ''}>
+        <label class="flex items-center gap-1.5 px-3.5 py-2.5 border rounded-xl cursor-pointer text-xs font-bold hover:bg-stone-50 transition-all">
+            <input type="radio" name="modal_selected_color" value="${c}" ${idx === 0 ? 'checked' : ''} class="accent-stone-900">
             ${c}
         </label>
     `).join('');
 
     modalContent.innerHTML = `
         <div class="space-y-4">
-            <img id="main-modal-img" src="${mainImg}" class="w-full h-80 sm:h-96 object-cover rounded-2xl border shadow-sm" alt="${p.name}">
+            <img id="main-modal-img" src="${mainImg}" class="w-full h-80 sm:h-96 object-cover rounded-2xl border shadow-md" alt="${p.name}">
             <div class="flex items-center gap-2 overflow-x-auto pb-1">${thumbsHTML}</div>
         </div>
         <div class="flex flex-col justify-between space-y-4">
             <div class="space-y-4">
                 <div>
-                    <span class="text-xs font-bold px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-lg">${p.category}</span>
-                    <h3 class="text-2xl font-black text-gray-900 mt-2">${p.name}</h3>
-                    <div class="flex items-baseline gap-2 mt-1">
-                        <p class="text-emerald-800 font-black text-2xl">${p.price} ج.م</p>
-                        ${p.old_price ? `<p class="text-sm font-bold text-gray-400 line-through">${p.old_price} ج.م</p>` : ''}
+                    <span class="text-xs font-bold px-3 py-1 bg-stone-100 text-stone-800 rounded-full">${p.category}</span>
+                    <h3 class="text-2xl font-black text-stone-900 mt-2 tracking-tight">${p.name}</h3>
+                    <div class="flex items-baseline gap-2 mt-2">
+                        <p class="text-stone-900 font-black text-2xl">${p.price} ج.م</p>
+                        ${p.old_price ? `<p class="text-sm font-bold text-stone-400 line-through">${p.old_price} ج.م</p>` : ''}
                     </div>
                 </div>
-                ${p.fabric ? `<p class="text-xs font-bold text-gray-500">الخامة المصنعة: <span class="text-gray-900">${p.fabric}</span></p>` : ''}
-                <p class="text-sm text-gray-600 leading-relaxed">${p.description || 'تصميم حصري من متجر EVAL بأرقى معايير الجودة.'}</p>
+                ${p.fabric ? `<p class="text-xs font-bold text-stone-500">الخامة المصنعة: <span class="text-stone-900">${p.fabric}</span></p>` : ''}
+                <p class="text-sm text-stone-600 leading-relaxed">${p.description || 'تصميم حصري من متجر EVAL بأرقى معايير الجودة.'}</p>
                 
                 <div class="space-y-2 border-t pt-3">
-                    <label class="block text-xs font-bold text-gray-800">اختر المقاس:</label>
+                    <label class="block text-xs font-bold text-stone-900">اختر المقاس المناسب:</label>
                     <div class="flex flex-wrap gap-2">${sizesHTML}</div>
                 </div>
 
                 <div class="space-y-2 border-t pt-3">
-                    <label class="block text-xs font-bold text-gray-800">اختر اللون:</label>
+                    <label class="block text-xs font-bold text-stone-900">اختر اللون:</label>
                     <div class="flex flex-wrap gap-2">${colorsHTML}</div>
                 </div>
             </div>
 
-            <div class="space-y-2">
-                <button onclick="addConfiguredToCart('${p.id}')" class="w-full py-4 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 text-base">
-                    <i class="fa-solid fa-cart-plus text-xl"></i> إضافة للسلة بالتفاصيل المختارة
+            <div class="space-y-2.5 pt-4 border-t">
+                <button onclick="addConfiguredToCart('${p.id}')" class="w-full py-4 bg-stone-900 hover:bg-black text-white font-bold rounded-2xl shadow-xl flex items-center justify-center gap-2 text-sm transition-all">
+                    <i class="fa-solid fa-cart-plus text-lg"></i> إضافة للسلة بالتفاصيل المختارة
                 </button>
-                <button onclick="shareProduct('${p.name}', '${p.price}')" class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs flex items-center justify-center gap-2">
+                <button onclick="shareProduct('${p.name}', '${p.price}')" class="w-full py-3 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all">
                     <i class="fa-solid fa-share-nodes"></i> مشاركة القطعة مع الأصدقاء
                 </button>
             </div>
@@ -549,38 +549,38 @@ function openEditProductModal(pId) {
     if (!editModal) {
         editModal = document.createElement('div');
         editModal.id = 'edit-product-modal';
-        editModal.className = 'fixed inset-0 bg-gray-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4';
+        editModal.className = 'fixed inset-0 bg-stone-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4';
         document.body.appendChild(editModal);
     }
 
     editModal.innerHTML = `
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b pb-3">
-                <h3 class="font-black text-lg text-gray-900">تعديل القطعة والخصم: ${p.name}</h3>
-                <button onclick="document.getElementById('edit-product-modal').remove()" class="text-gray-400 hover:text-gray-700 font-bold text-lg"><i class="fa-solid fa-xmark"></i></button>
+                <h3 class="font-black text-lg text-stone-900">تعديل القطعة والخصم: ${p.name}</h3>
+                <button onclick="document.getElementById('edit-product-modal').remove()" class="text-stone-400 hover:text-stone-700 font-bold text-lg"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form onsubmit="saveProductChanges(event, '${p.id}')" class="space-y-3">
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">اسم القطعة:</label>
-                    <input type="text" id="edit-p-name" value="${p.name}" class="w-full p-3 border rounded-xl text-sm font-bold bg-gray-50" required>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">اسم القطعة:</label>
+                    <input type="text" id="edit-p-name" value="${p.name}" class="w-full p-3 border rounded-xl text-sm font-bold bg-stone-50" required>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">السعر الحالي (بعد الخصم):</label>
-                        <input type="number" step="0.01" id="edit-p-price" value="${p.price}" class="w-full p-3 border rounded-xl text-sm font-bold bg-gray-50" required>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">السعر الحالي (بعد الخصم):</label>
+                        <input type="number" step="0.01" id="edit-p-price" value="${p.price}" class="w-full p-3 border rounded-xl text-sm font-bold bg-stone-50" required>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">السعر القديم (قبل الخصم - اختياري):</label>
-                        <input type="number" step="0.01" id="edit-p-old-price" value="${p.old_price || ''}" placeholder="مثال: 850" class="w-full p-3 border rounded-xl text-sm font-bold bg-gray-50">
+                        <label class="block text-xs font-bold text-stone-700 mb-1">السعر القديم (قبل الخصم):</label>
+                        <input type="number" step="0.01" id="edit-p-old-price" value="${p.old_price || ''}" placeholder="مثال: 850" class="w-full p-3 border rounded-xl text-sm font-bold bg-stone-50">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">الوصف:</label>
-                    <textarea id="edit-p-desc" rows="3" class="w-full p-3 border rounded-xl text-sm bg-gray-50">${p.description || ''}</textarea>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">الوصف:</label>
+                    <textarea id="edit-p-desc" rows="3" class="w-full p-3 border rounded-xl text-sm bg-stone-50">${p.description || ''}</textarea>
                 </div>
                 <div class="pt-3 flex gap-2">
-                    <button type="submit" class="flex-1 py-3 bg-emerald-800 text-white font-bold rounded-xl text-sm hover:bg-emerald-900 shadow">حفظ التعديلات</button>
-                    <button type="button" onclick="document.getElementById('edit-product-modal').remove()" class="py-3 px-5 bg-gray-100 text-gray-700 font-bold rounded-xl text-sm">إلغاء</button>
+                    <button type="submit" class="flex-1 py-3 bg-stone-900 text-white font-bold rounded-xl text-sm hover:bg-black shadow">حفظ التعديلات</button>
+                    <button type="button" onclick="document.getElementById('edit-product-modal').remove()" class="py-3 px-5 bg-stone-100 text-stone-700 font-bold rounded-xl text-sm">إلغاء</button>
                 </div>
             </form>
         </div>
@@ -752,9 +752,9 @@ function renderCategories() {
     const select = document.getElementById('p-category');
     
     if(container) {
-        container.innerHTML = `<button onclick="filterByCategory('all')" class="cat-btn active px-5 py-2.5 rounded-xl text-sm font-bold bg-gray-900 text-white whitespace-nowrap shadow-sm shrink-0">الكل</button>`;
+        container.innerHTML = `<button onclick="filterByCategory('all')" class="cat-btn active px-6 py-2.5 rounded-full text-xs font-bold bg-stone-900 text-white whitespace-nowrap shadow-md transition-all shrink-0">الكل</button>`;
         categories.forEach(c => {
-            container.innerHTML += `<button onclick="filterByCategory('${c}')" class="cat-btn px-5 py-2.5 rounded-xl text-sm font-bold bg-white text-gray-600 hover:bg-gray-100 border border-gray-100 shadow-sm whitespace-nowrap shrink-0">${c}</button>`;
+            container.innerHTML += `<button onclick="filterByCategory('${c}')" class="cat-btn px-6 py-2.5 rounded-full text-xs font-bold bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80 shadow-sm whitespace-nowrap transition-all shrink-0">${c}</button>`;
         });
     }
     if(select) {
@@ -766,7 +766,7 @@ function renderAdminCategories() {
     const container = document.getElementById('admin-cat-list');
     if(!container) return;
     container.innerHTML = categories.map(c => `
-        <span class="inline-flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 border">
+        <span class="inline-flex items-center gap-2 bg-stone-100 px-3 py-2 rounded-xl text-xs font-bold text-stone-700 border">
             ${c}
             ${currentUser.role === 'admin' ? `<button onclick="deleteCategory('${c}')" class="text-rose-600 hover:text-rose-800 ml-1"><i class="fa-solid fa-xmark"></i></button>` : ''}
         </span>
@@ -775,9 +775,10 @@ function renderAdminCategories() {
 
 function filterByCategory(cat) {
     currentCategoryFilter = cat;
-    document.querySelectorAll('.cat-btn').forEach(b => { b.classList.remove('bg-gray-900', 'text-white'); b.classList.add('bg-white', 'text-gray-600'); });
+    document.querySelectorAll('.cat-btn').forEach(b => { b.classList.remove('bg-stone-900', 'text-white', 'shadow-md'); b.classList.add('bg-white', 'text-stone-600', 'border-stone-200/80', 'shadow-sm'); });
     if(event && event.currentTarget) {
-        event.currentTarget.classList.add('bg-gray-900', 'text-white');
+        event.currentTarget.classList.remove('bg-white', 'text-stone-600', 'border-stone-200/80', 'shadow-sm');
+        event.currentTarget.classList.add('bg-stone-900', 'text-white', 'shadow-md');
     }
     renderProducts(cat);
 }
@@ -802,7 +803,7 @@ function renderProducts(filter = 'all') {
     }
 
     if (items.length === 0) {
-        grid.innerHTML = `<div class="col-span-full text-center py-16 text-gray-400 font-bold">لا توجد منتجات متوفرة حالياً.</div>`;
+        grid.innerHTML = `<div class="col-span-full text-center py-20 text-stone-400 font-bold tracking-wide">لا توجد قطع متوفرة حالياً في هذا القسم.</div>`;
         return;
     }
     
@@ -831,18 +832,20 @@ function renderProducts(filter = 'all') {
         }
 
         return `
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col relative">
-                ${!avail ? '<div class="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center"><span class="bg-gray-900 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow">نفذت الكمية</span></div>' : ''}
-                <img src="${imagesArr[0]}" onclick="openProductDetailModal('${p.id}')" class="w-full h-52 sm:h-64 object-cover cursor-pointer hover:opacity-95 transition-all" alt="${p.name}">
-                <div class="p-4 flex flex-col flex-grow space-y-2">
-                    <span class="text-[10px] font-bold px-2 py-0.5 bg-emerald-50 text-emerald-800 rounded-md w-fit">${p.category}</span>
-                    <h3 onclick="openProductDetailModal('${p.id}')" class="font-bold text-gray-900 text-sm line-clamp-1 cursor-pointer hover:text-emerald-800 transition-all">${p.name}</h3>
-                    <div class="mt-auto pt-2 flex items-center justify-between border-t border-gray-50">
+            <div class="bg-white rounded-3xl border border-stone-200/60 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col relative group">
+                ${!avail ? '<div class="absolute inset-0 bg-white/80 backdrop-blur-[2px] z-10 flex items-center justify-center"><span class="bg-stone-900 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-lg tracking-wider">نفذت الكمية</span></div>' : ''}
+                <div class="relative overflow-hidden aspect-[4/5] bg-stone-100">
+                    <img src="${imagesArr[0]}" onclick="openProductDetailModal('${p.id}')" class="w-full h-full object-cover cursor-pointer group-hover:scale-105 transition-transform duration-500" alt="${p.name}">
+                    <span class="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-stone-900 text-[10px] font-bold px-3 py-1 rounded-full shadow-sm">${p.category}</span>
+                </div>
+                <div class="p-5 flex flex-col flex-grow space-y-3">
+                    <h3 onclick="openProductDetailModal('${p.id}')" class="font-bold text-stone-900 text-sm sm:text-base line-clamp-1 cursor-pointer hover:text-stone-600 transition-colors">${p.name}</h3>
+                    <div class="mt-auto pt-3 flex items-center justify-between border-t border-stone-100">
                         <div>
-                            <span class="font-black text-emerald-800 text-base">${p.price} ج.م</span>
-                            ${p.old_price ? `<span class="text-xs font-bold text-gray-400 line-through mr-1.5">${p.old_price} ج.م</span>` : ''}
+                            <span class="font-black text-stone-900 text-lg">${p.price} ج.م</span>
+                            ${p.old_price ? `<span class="text-xs font-bold text-stone-400 line-through mr-2">${p.old_price} ج.م</span>` : ''}
                         </div>
-                        ${avail ? `<button onclick="openProductDetailModal('${p.id}')" class="p-2 bg-emerald-800 text-white rounded-xl hover:bg-emerald-900 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-eye"></i> عرض وتخصيص</button>` : '<span class="text-xs font-bold text-gray-400">غير متوفر</span>'}
+                        ${avail ? `<button onclick="openProductDetailModal('${p.id}')" class="px-4 py-2.5 bg-stone-900 text-white rounded-xl hover:bg-black text-xs font-bold flex items-center gap-1.5 shadow-md transition-all"><i class="fa-solid fa-eye"></i> عرض</button>` : '<span class="text-xs font-bold text-stone-400">غير متوفر</span>'}
                     </div>
                 </div>
             </div>
@@ -853,18 +856,18 @@ function renderProducts(filter = 'all') {
 function renderReviews() {
     const list = document.getElementById('reviews-list');
     if(!list) return;
-    if(reviews.length === 0) { list.innerHTML = `<p class="text-sm text-gray-400">لا توجد تقييمات أو تعليقات حتى الآن.</p>`; return; }
+    if(reviews.length === 0) { list.innerHTML = `<p class="text-sm text-stone-400 text-center py-6">لا توجد تقييمات حتى الآن.</p>`; return; }
     
     list.innerHTML = reviews.map(r => {
         const ratingNum = r.rating || 5;
         const stars = '⭐'.repeat(ratingNum);
         return `
-            <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-1">
+            <div class="bg-white p-6 rounded-3xl border border-stone-200/70 shadow-sm space-y-2">
                 <div class="flex items-center justify-between">
-                    <h4 class="font-bold text-sm text-gray-900">${r.name}</h4>
+                    <h4 class="font-bold text-sm text-stone-900">${r.name}</h4>
                     <span class="text-xs text-amber-500">${stars}</span>
                 </div>
-                <p class="text-xs text-gray-600">${r.comment}</p>
+                <p class="text-xs sm:text-sm text-stone-600 leading-relaxed">${r.comment}</p>
             </div>
         `;
     }).join('');
@@ -881,18 +884,18 @@ function renderAdminProductsList() {
             firstImg = p.image_url;
         }
         return `
-            <div class="py-3 flex items-center justify-between gap-4 border-b border-gray-100 last:border-0">
+            <div class="py-3.5 flex items-center justify-between gap-4 border-b border-stone-100 last:border-0">
                 <div class="flex items-center gap-3">
-                    <img src="${firstImg}" class="w-12 h-12 rounded-xl object-cover" alt="">
+                    <img src="${firstImg}" class="w-12 h-12 rounded-2xl object-cover border" alt="">
                     <div>
-                        <h4 class="font-bold text-sm text-gray-900">${p.name}</h4>
-                        <p class="text-xs text-gray-500">${p.price} ج.م ${p.old_price ? `<span class="line-through text-rose-500 mr-1">${p.old_price} ج.م</span>` : ''}</p>
+                        <h4 class="font-bold text-sm text-stone-900">${p.name}</h4>
+                        <p class="text-xs text-stone-500">${p.price} ج.م ${p.old_price ? `<span class="line-through text-rose-500 mr-1">${p.old_price} ج.م</span>` : ''}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="openEditProductModal('${p.id}')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold">تعديل / خصم</button>
-                    <button onclick="toggleProductAvailability('${p.id}', ${p.is_available !== false})" class="px-3 py-1.5 rounded-xl text-xs font-bold ${p.is_available !== false ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-800'}">${p.is_available !== false ? 'إيقاف' : 'تفعيل'}</button>
-                    ${currentUser.role === 'admin' ? `<button onclick="deleteProduct('${p.id}')" class="p-2 text-rose-600"><i class="fa-solid fa-trash"></i></button>` : ''}
+                    <button onclick="openEditProductModal('${p.id}')" class="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold transition-all">تعديل</button>
+                    <button onclick="toggleProductAvailability('${p.id}', ${p.is_available !== false})" class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${p.is_available !== false ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-800'}">${p.is_available !== false ? 'إيقاف' : 'تفعيل'}</button>
+                    ${currentUser.role === 'admin' ? `<button onclick="deleteProduct('${p.id}')" class="p-2.5 text-rose-600 hover:bg-rose-50 rounded-xl transition-all"><i class="fa-solid fa-trash"></i></button>` : ''}
                 </div>
             </div>
         `;
@@ -903,16 +906,16 @@ function renderAdminReviewsList() {
     const container = document.getElementById('admin-reviews-list');
     if(!container) return;
     if (reviews.length === 0) {
-        container.innerHTML = `<p class="text-xs text-gray-400 py-3">لا توجد تعليقات مراقبة حالياً.</p>`;
+        container.innerHTML = `<p class="text-xs text-stone-400 py-3">لا توجد تعليقات مراقبة حالياً.</p>`;
         return;
     }
     container.innerHTML = reviews.map(r => `
-        <div class="py-3 flex items-center justify-between gap-4">
+        <div class="py-3.5 flex items-center justify-between gap-4 border-b border-stone-100 last:border-0">
             <div>
-                <h4 class="font-bold text-sm text-gray-900">${r.name} <span class="text-xs text-amber-500">(${r.rating || 5}⭐)</span></h4>
-                <p class="text-xs text-gray-600">${r.comment}</p>
+                <h4 class="font-bold text-sm text-stone-900">${r.name} <span class="text-xs text-amber-500">(${r.rating || 5}⭐)</span></h4>
+                <p class="text-xs text-stone-600">${r.comment}</p>
             </div>
-            ${currentUser.role === 'admin' ? `<button onclick="deleteReview('${r.id}')" class="px-3 py-1.5 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold">حذف التعليق</button>` : ''}
+            ${currentUser.role === 'admin' ? `<button onclick="deleteReview('${r.id}')" class="px-3.5 py-1.5 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold hover:bg-rose-100 transition-all">حذف التعليق</button>` : ''}
         </div>
     `).join('');
 }
@@ -932,7 +935,7 @@ function renderCart() {
     if(!container || !summary) return;
 
     if (cart.length === 0) {
-        container.innerHTML = `<p class="text-center py-8 text-gray-400 font-bold">السلة فارغة حالياً.</p>`;
+        container.innerHTML = `<p class="text-center py-12 text-stone-400 font-bold">سلة التسوق فارغة حالياً.</p>`;
         summary.classList.add('hidden');
         return;
     }
@@ -942,19 +945,19 @@ function renderCart() {
     container.innerHTML = cart.map((item, idx) => {
         total += Number(item.price);
         return `
-            <div class="flex items-center justify-between gap-4 border-b pb-3 last:border-0">
+            <div class="flex items-center justify-between gap-4 border-b border-stone-100 pb-4 last:border-0">
                 <div class="flex items-center gap-3">
-                    <img src="${item.image_url}" class="w-14 h-14 rounded-xl object-cover" alt="">
+                    <img src="${item.image_url}" class="w-16 h-16 rounded-2xl object-cover border" alt="">
                     <div>
-                        <h4 class="font-bold text-sm text-gray-900">${item.name}</h4>
-                        <div class="flex items-center gap-2 text-xs text-gray-500 font-medium">
+                        <h4 class="font-bold text-sm text-stone-900">${item.name}</h4>
+                        <div class="flex items-center gap-2 text-xs text-stone-500 font-medium mt-1">
                             <span>المقاس: ${item.size || 'Free Size'}</span> | 
                             <span>اللون: ${item.color || 'أساسي'}</span>
                         </div>
-                        <p class="text-xs text-emerald-800 font-bold mt-0.5">${item.price} ج.م</p>
+                        <p class="text-xs text-stone-900 font-black mt-1">${item.price} ج.م</p>
                     </div>
                 </div>
-                <button onclick="removeFromCart(${idx})" class="text-rose-500 text-xs font-bold">إزالة</button>
+                <button onclick="removeFromCart(${idx})" class="text-rose-500 hover:text-rose-700 text-xs font-bold p-2"><i class="fa-solid fa-trash-can"></i></button>
             </div>
         `;
     }).join('');
@@ -963,10 +966,10 @@ function renderCart() {
     if(totalPriceEl) totalPriceEl.innerText = `${total} ج.م`;
 
     let payHTML = '';
-    if(storeSettings.payments.cod) payHTML += `<label class="flex items-center gap-2 p-3 bg-gray-50 border rounded-xl cursor-pointer"><input type="radio" name="pay_method" value="الدفع عند الاستلام" checked> الدفع عند الاستلام</label>`;
-    if(storeSettings.payments.instapay) payHTML += `<label class="flex items-center gap-2 p-3 bg-gray-50 border rounded-xl cursor-pointer"><input type="radio" name="pay_method" value="Instapay / فودافون كاش"> InstaPay / فودافون كاش</label>`;
-    if(storeSettings.payments.visa) payHTML += `<label class="flex items-center gap-2 p-3 bg-gray-50 border rounded-xl cursor-pointer"><input type="radio" name="pay_method" value="بطاقة ائتمانية / Visa"> Visa / Master</label>`;
-    if(storeSettings.payments.bank) payHTML += `<label class="flex items-center gap-2 p-3 bg-gray-50 border rounded-xl cursor-pointer"><input type="radio" name="pay_method" value="تحويل بنكي مباشر"> تحويل بنكي مباشر</label>`;
+    if(storeSettings.payments.cod) payHTML += `<label class="flex items-center gap-3 p-4 bg-stone-50/80 border border-stone-200/70 rounded-2xl cursor-pointer hover:bg-stone-100 transition-all font-bold text-sm text-stone-800"><input type="radio" name="pay_method" value="الدفع عند الاستلام" checked class="accent-stone-900 w-4 h-4"> الدفع عند الاستلام</label>`;
+    if(storeSettings.payments.instapay) payHTML += `<label class="flex items-center gap-3 p-4 bg-stone-50/80 border border-stone-200/70 rounded-2xl cursor-pointer hover:bg-stone-100 transition-all font-bold text-sm text-stone-800"><input type="radio" name="pay_method" value="Instapay / فودافون كاش" class="accent-stone-900 w-4 h-4"> InstaPay / فودافون كاش</label>`;
+    if(storeSettings.payments.visa) payHTML += `<label class="flex items-center gap-3 p-4 bg-stone-50/80 border border-stone-200/70 rounded-2xl cursor-pointer hover:bg-stone-100 transition-all font-bold text-sm text-stone-800"><input type="radio" name="pay_method" value="بطاقة ائتمانية / Visa" class="accent-stone-900 w-4 h-4"> Visa / Master</label>`;
+    if(storeSettings.payments.bank) payHTML += `<label class="flex items-center gap-3 p-4 bg-stone-50/80 border border-stone-200/70 rounded-2xl cursor-pointer hover:bg-stone-100 transition-all font-bold text-sm text-stone-800"><input type="radio" name="pay_method" value="تحويل بنكي مباشر" class="accent-stone-900 w-4 h-4"> تحويل بنكي مباشر</label>`;
     if(payContainer) payContainer.innerHTML = payHTML;
 }
 
