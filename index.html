@@ -31,51 +31,66 @@
 <body class="bg-gray-50 text-gray-800 antialiased min-h-screen flex flex-col justify-between">
 
     <!-- Dynamic Announcement Bar -->
-    <div id="announcement-bar" class="bg-emerald-900 text-white text-xs font-bold py-2 px-4 text-center tracking-wider flex items-center justify-center gap-2 shadow-sm hidden">
-        <i class="fa-solid fa-bolt text-amber-400"></i>
-        <span id="announcement-text"></span>
+    <!-- شريط التنبيهات الفخم -->
+    <div id="announcement-bar" class="bg-stone-950 text-stone-200 text-xs py-2.5 px-4 text-center font-bold tracking-wider">
+        <span id="announcement-text">✨ خصم حصري لفترة محدودة على تشكيلة الموسم الجديد - الشحن مجاني للطلبات الكبرى</span>
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-5 left-5 z-50 bg-emerald-800 text-white px-5 py-3 rounded-2xl shadow-xl font-bold text-sm transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2">
-        <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+    <div id="toast" class="fixed bottom-5 left-5 z-50 bg-stone-900 text-white px-5 py-3 rounded-2xl shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 flex items-center gap-2.5 text-xs font-bold">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
         <span id="toast-message">تمت العملية بنجاح</span>
     </div>
 
-    <!-- Header / Navbar -->
-    <header class="sticky top-0 z-40 glass-nav border-b border-gray-100 shadow-sm">
+    <!-- Header / Navbar الفخم -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-stone-200/60 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <div class="flex items-center gap-3 cursor-pointer select-none" onclick="switchTab('store')">
-                    <div class="w-10 h-10 bg-emerald-800 text-white flex items-center justify-center rounded-xl font-bold text-xl shadow-md">E</div>
+                
+                <!-- شعار المتجر -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('store')">
+                    <div class="w-11 h-11 bg-stone-900 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md">E</div>
                     <div>
-                        <h1 class="text-2xl font-black text-gray-900 tracking-wider">EVAL</h1>
-                        <p class="text-[10px] text-gray-500 font-medium tracking-widest">أناقة وأصالة</p>
+                        <h1 class="text-xl font-black text-stone-900 tracking-wider">EVAL</h1>
+                        <p class="text-[10px] text-stone-500 font-bold tracking-widest uppercase">Luxury Fashion</p>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-6">
-                    <nav class="hidden md:flex items-center gap-4 text-sm font-bold text-gray-700">
-                        <button onclick="switchTab('store')" class="hover:text-emerald-800 transition-all">المنتجات</button>
-                        <button onclick="switchTab('contact')" class="hover:text-emerald-800 transition-all">التواصل معنا</button>
-                        <button onclick="switchTab('reviews')" class="hover:text-emerald-800 transition-all">التعليقات</button>
-                        <button onclick="switchTab('about')" class="hover:text-emerald-800 transition-all">من نحن</button>
+                <!-- أزرار التنقل للشاشات الكبيرة -->
+                <div class="hidden md:flex items-center gap-6">
+                    <nav class="flex items-center gap-8 text-sm font-bold text-stone-700">
+                        <button onclick="switchTab('store')" class="hover:text-stone-900 transition-colors">المنتجات</button>
+                        <button onclick="switchTab('contact')" class="hover:text-stone-900 transition-colors">التواصل معنا</button>
+                        <button onclick="switchTab('reviews')" class="hover:text-stone-900 transition-colors">التعليقات</button>
+                        <button onclick="switchTab('about')" class="hover:text-stone-900 transition-colors">من نحن</button>
                     </nav>
 
-                    <button onclick="switchTab('cart')" class="relative p-2.5 rounded-xl bg-gray-100 text-gray-800 hover:bg-emerald-800 hover:text-white transition-all">
-                        <i class="fa-solid fa-cart-shopping text-lg"></i>
-                        <span id="cart-count" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow">0</span>
+                    <button onclick="switchTab('cart')" class="relative p-3 bg-stone-100 hover:bg-stone-200 text-stone-900 rounded-2xl transition-all shadow-xs">
+                        <i class="fa-solid fa-bag-shopping text-base"></i>
+                        <span id="cart-count" class="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-md hidden">0</span>
                     </button>
                 </div>
+
+                <!-- أيقونة السلة للشاشات الصغيرة -->
+                <div class="flex md:hidden items-center gap-3">
+                    <button onclick="switchTab('cart')" class="relative p-3 bg-stone-100 text-stone-900 rounded-2xl">
+                        <i class="fa-solid fa-bag-shopping text-base"></i>
+                        <span id="cart-count-mobile" class="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-md hidden">0</span>
+                    </button>
+                </div>
+
             </div>
-            <div class="flex md:hidden items-center justify-around py-2 border-t border-gray-100 text-xs font-bold text-gray-700">
-                <button onclick="switchTab('store')">المنتجات</button>
-                <button onclick="switchTab('contact')">التواصل معنا</button>
-                <button onclick="switchTab('reviews')">التعليقات</button>
-                <button onclick="switchTab('about')">من نحن</button>
+
+            <!-- شريط التنقل السفلي للهواتف -->
+            <div class="flex md:hidden items-center justify-around py-3 border-t border-stone-100 text-xs font-bold text-stone-700">
+                <button onclick="switchTab('store')" class="hover:text-stone-900">المنتجات</button>
+                <button onclick="switchTab('contact')" class="hover:text-stone-900">التواصل معنا</button>
+                <button onclick="switchTab('reviews')" class="hover:text-stone-900">التعليقات</button>
+                <button onclick="switchTab('about')" class="hover:text-stone-900">من نحن</button>
             </div>
         </div>
     </header>
+
 
     <!-- Main Content Container -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
