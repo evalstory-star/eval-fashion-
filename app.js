@@ -66,9 +66,10 @@ function loadLocalState() {
     if(document.getElementById('pay-bank')) document.getElementById('pay-bank').checked = storeSettings.payments.bank;
 }
 
+// جلب الإعدادات من السيرفر بشكل دقيق وموثوق
 async function fetchStoreSettings() {
     try {
-        const { data, error } = await _supabase.from('site_settings').select('*').limit(1).maybeSingle();
+        const { data, error } = await _supabase.from('site_settings').select('*').eq('id', 1).maybeSingle();
         if (data) {
             storeSettings.heroBg = data.hero_bg || storeSettings.heroBg;
             storeSettings.heroBadge = data.hero_badge || storeSettings.heroBadge;
@@ -81,7 +82,7 @@ async function fetchStoreSettings() {
             storeSettings.aboutText = data.about_text || storeSettings.aboutText;
             storeSettings.contactText = data.contact_text || storeSettings.contactText;
 
-            // تعبئة حقول لوحة التحكم
+            // تعبئة حقول لوحة التحكم فور تحميل الصفحة
             if(document.getElementById('admin-announcement')) document.getElementById('admin-announcement').value = storeSettings.announcement;
             if(document.getElementById('admin-hero-bg')) document.getElementById('admin-hero-bg').value = storeSettings.heroBg;
             if(document.getElementById('admin-hero-badge')) document.getElementById('admin-hero-badge').value = storeSettings.heroBadge;
@@ -674,6 +675,7 @@ function deleteCategory(cat) {
     showToast("تم حذف القسم!");
 }
 
+// دالة حفظ إعدادات المتجر مرتبطة تماماً بالـ id الأساسي رقم 1
 async function saveStoreSettings() {
     if(currentUser.role !== 'admin') { alert("عذراً، تعديل إعدادات المتجر مقتصر على المدير الرئيسي فقط!"); return; }
     
@@ -721,7 +723,7 @@ async function saveStoreSettings() {
         if(document.getElementById('pay-visa')) storeSettings.payments.visa = document.getElementById('pay-visa').checked;
         if(document.getElementById('pay-bank')) storeSettings.payments.bank = document.getElementById('pay-bank').checked;
 
-        // استخدام upsert مع id: 1 لضمان التحديث المباشر وتجنب تكرار الصفوف
+        // إرسال البيانات بـ id: 1 لضمان استبدال أو تحديث الصف الثابت الوحيد
         const payload = {
             id: 1,
             hero_bg: heroBgUrl,
