@@ -125,29 +125,27 @@ function checkLoginLockout() {
     if (lockoutTime) {
         const remaining = parseInt(lockoutTime) - Date.now();
         if (remaining > 0) {
-            const minutesLeft = Math.ceil(remaining / 60000);
-            return minutesLeft;
+            return true; // الجهاز محظور صامتاً
         } else {
             localStorage.removeItem('eval_lockout_time');
             localStorage.setItem('eval_failed_attempts', '0');
         }
     }
-    return 0;
+    return false;
 }
 
 async function handleLogin(e) {
     e.preventDefault();
 
-    const lockoutMins = checkLoginLockout();
-    if (lockoutMins > 0) {
-        alert(`⚠️ تم حظر محاولات الدخول لوجود محاولات خاطئة متكررة. يرجى المحاولة بعد ${lockoutMins} دقيقة.`);
+    if (checkLoginLockout()) {
+        alert("❌ بيانات الدخول غير صحيحة.");
         return;
     }
 
     const email = document.getElementById('login-email').value.trim();
     const pass = document.getElementById('login-pass').value.trim();
 
-    // إيميل المدير الرئيسي الجديد والأكثر تعقيداً
+    // البريد الإداري الرئيسي المعقد والحصري
     if (email === "ibrahim.a.habo1.552.eval@eval.com" && pass === "5528332$777262&eval") {
         localStorage.setItem('eval_failed_attempts', '0');
         currentUser = { username: 'المدير الرئيسي', role: 'admin', email: email };
@@ -158,19 +156,22 @@ async function handleLogin(e) {
     try {
         const { data } = await _supabase.from('staff_users').select('*').eq('email', email).eq('password', pass).single();
         if (data) {
-            if (!data.is_active) { alert("الحساب معطل!"); return; }
+            if (!data.is_active) { 
+                alert("❌ بيانات الدخول غير صحيحة."); 
+                return; 
+            }
             localStorage.setItem('eval_failed_attempts', '0');
             currentUser = { username: data.username, role: 'staff', email: email };
             setupDashboard();
         } else {
-            handleFailedLogin(email);
+            await handleFailedLogin(email);
         }
     } catch (err) {
-        handleFailedLogin(email);
+        await handleFailedLogin(email);
     }
 }
 
-function handleFailedLogin(attemptedEmail) {
+async function handleFailedLogin(attemptedEmail) {
     let attempts = parseInt(localStorage.getItem('eval_failed_attempts') || '0') + 1;
     localStorage.setItem('eval_failed_attempts', attempts);
 
@@ -178,18 +179,20 @@ function handleFailedLogin(attemptedEmail) {
         const lockoutDuration = 15 * 60 * 1000; // 15 دقيقة
         localStorage.setItem('eval_lockout_time', Date.now() + lockoutDuration);
         
-        sendSecurityAlertToWhatsApp(attemptedEmail);
-
-        alert("🚨 تم تجاوز الحد الأقصى للمحاولات الخاطئة (3 محاولات). تم حظر تسجيل الدخول لمدة 15 دقيقة وتم إرسال تنبيه أمني برقم الواتساب!");
-    } else {
-        alert(`❌ بيانات الدخول غير صحيحة! محاولاتك الفاشلة: ${attempts} من 3.`);
+        // تسجيل المحاولة الخاطئة صامتاً بجدول الأمان بالخلفية
+        try {
+            await _supabase.from('security_logs').insert([{ 
+                attempted_email: attemptedEmail, 
+                user_agent: navigator.userAgent,
+                created_at: new Date() 
+            }]);
+        } catch (dbErr) {
+            console.error("Security log fail-silent:", dbErr);
+        }
     }
-}
 
-function sendSecurityAlertToWhatsApp(badEmail) {
-    const alertMsg = `🚨 تنبيه أمني خطير من متجر EVAL:\n\nحدثت 3 محاولات تسجيل دخول خاطئة باستخدام البريد:\n📧 ${badEmail}\n\nتم حظر الوصول للوحة التحكم مؤقتاً لمدة 15 دقيقة للمحافظة على أمان المتجر.`;
-    const cleanPhone = storeSettings.whatsapp.replace(/[^0-9]/g, '');
-    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(alertMsg)}`, '_blank');
+    // رسالة موحدة ومبهمة تمنع إعطاء المخترق أي تلميح أو عداد
+    alert("❌ بيانات الدخول غير صحيحة.");
 }
 
 async function setupDashboard() {
