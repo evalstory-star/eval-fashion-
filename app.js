@@ -721,7 +721,7 @@ async function saveStoreSettings() {
         if(document.getElementById('pay-visa')) storeSettings.payments.visa = document.getElementById('pay-visa').checked;
         if(document.getElementById('pay-bank')) storeSettings.payments.bank = document.getElementById('pay-bank').checked;
 
-        // استخدام معرف ثابت رقم 1 لضمان تحديث الصف الأساسي دائماً وتجنب تكرار الصفوف
+        // استخدام upsert مع id: 1 لضمان التحديث المباشر وتجنب تكرار الصفوف
         const payload = {
             id: 1,
             hero_bg: heroBgUrl,
