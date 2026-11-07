@@ -22,6 +22,7 @@ let storeSettings = {
     ig: 'https://www.instagram.com/eval_store_fashion?psln=ejN5dTl4czhxdDE=',
     aboutText: 'نؤمن في EVAL بأن الأناقة الحقيقية هي انعكاس للشخصية والفرادة. وُلدت علامتنا لتلبي تطلعات أصحاب الذوق الرفيع، حيث ندمج الأصالة بالتصاميم المعاصرة لنقدم لكم قطعاً حصرية صُنعت بكل عناية وإتقان.',
     contactText: 'يسعدنا دائماً تواصلكم واستقبال استفساراتكم وآرائكم. فريق خدمة العملاء في EVAL في خدمتكم على مدار الساعة لتقديم الدعم والمساعدة.',
+    logoUrl: '',
     payments: { cod: true, instapay: true, visa: true, bank: true }
 };
 
@@ -80,6 +81,7 @@ async function fetchStoreSettings() {
             storeSettings.ig = data.instagram || storeSettings.ig;
             storeSettings.aboutText = data.about_text || storeSettings.aboutText;
             storeSettings.contactText = data.contact_text || storeSettings.contactText;
+            storeSettings.logoUrl = data.logo_url || '';
 
             if(document.getElementById('admin-announcement')) document.getElementById('admin-announcement').value = storeSettings.announcement;
             if(document.getElementById('admin-hero-bg')) document.getElementById('admin-hero-bg').value = storeSettings.heroBg;
@@ -91,11 +93,23 @@ async function fetchStoreSettings() {
             if(document.getElementById('admin-ig')) document.getElementById('admin-ig').value = storeSettings.ig;
             if(document.getElementById('admin-about-text')) document.getElementById('admin-about-text').value = storeSettings.aboutText;
             if(document.getElementById('admin-contact-text')) document.getElementById('admin-contact-text').value = storeSettings.contactText;
+            if(document.getElementById('admin-logo-url')) document.getElementById('admin-logo-url').value = storeSettings.logoUrl;
             
             renderDynamicContent();
+            updateHeaderLogoView();
         }
     } catch (err) {
         console.error("Error fetching store settings:", err);
+    }
+}
+
+function updateHeaderLogoView() {
+    const container = document.getElementById('store-logo-container');
+    if (!container) return;
+    if (storeSettings.logoUrl && storeSettings.logoUrl.trim() !== '') {
+        container.innerHTML = `<img src="${storeSettings.logoUrl}" class="w-full h-full object-cover" alt="Logo">`;
+    } else {
+        container.innerHTML = `<span id="store-logo-text">E</span>`;
     }
 }
 
@@ -125,7 +139,7 @@ function checkLoginLockout() {
     if (lockoutTime) {
         const remaining = parseInt(lockoutTime) - Date.now();
         if (remaining > 0) {
-            return true; // الجهاز محظور صامتاً
+            return true; // محظور صامتاً
         } else {
             localStorage.removeItem('eval_lockout_time');
             localStorage.setItem('eval_failed_attempts', '0');
@@ -179,7 +193,7 @@ async function handleFailedLogin(attemptedEmail) {
         const lockoutDuration = 15 * 60 * 1000; // 15 دقيقة
         localStorage.setItem('eval_lockout_time', Date.now() + lockoutDuration);
         
-        // تسجيل المحاولة الخاطئة صامتاً بجدول الأمان بالخلفية
+        // تسجيل المحاولة الخاطئة صامتاً في قاعدة البيانات دون إزعاج المستخدم أو تنبيهه
         try {
             await _supabase.from('security_logs').insert([{ 
                 attempted_email: attemptedEmail, 
@@ -191,7 +205,7 @@ async function handleFailedLogin(attemptedEmail) {
         }
     }
 
-    // رسالة موحدة ومبهمة تمنع إعطاء المخترق أي تلميح أو عداد
+    // رسالة موحدة ومبهمة تماماً لا تظهر عدد المحاولات أو أي تلميح
     alert("❌ بيانات الدخول غير صحيحة.");
 }
 
@@ -736,7 +750,10 @@ async function saveStoreSettings() {
     let heroBgUrl = document.getElementById('admin-hero-bg') ? document.getElementById('admin-hero-bg').value.trim() : storeSettings.heroBg;
     const heroFileInput = document.getElementById('admin-hero-file');
     
-    showToast("جاري حفظ الإعدادات والغلاف والنصوص...");
+    let logoUrlFinal = document.getElementById('admin-logo-url') ? document.getElementById('admin-logo-url').value.trim() : storeSettings.logoUrl;
+    const logoFileInput = document.getElementById('admin-logo-file');
+    
+    showToast("جاري حفظ الإعدادات والغلاف والشعار والنصوص...");
 
     try {
         if (heroFileInput && heroFileInput.files.length > 0) {
@@ -749,6 +766,19 @@ async function saveStoreSettings() {
             const { data: urlData } = _supabase.storage.from('product-images').getPublicUrl(fileName);
             if (urlData && urlData.publicUrl) {
                 heroBgUrl = urlData.publicUrl;
+            }
+        }
+
+        if (logoFileInput && logoFileInput.files.length > 0) {
+            const file = logoFileInput.files[0];
+            const fileName = `logo_${Date.now()}.${file.name.split('.').pop()}`;
+            
+            const { error: uploadLogoErr } = await _supabase.storage.from('product-images').upload(fileName, file);
+            if (!uploadLogoErr) {
+                const { data: logoUrlData } = _supabase.storage.from('product-images').getPublicUrl(fileName);
+                if (logoUrlData && logoUrlData.publicUrl) {
+                    logoUrlFinal = logoUrlData.publicUrl;
+                }
             }
         }
 
@@ -772,6 +802,8 @@ async function saveStoreSettings() {
         storeSettings.ig = newIg;
         storeSettings.aboutText = newAbout;
         storeSettings.contactText = newContact;
+        storeSettings.logoUrl = logoUrlFinal;
+
         if(document.getElementById('pay-cod')) storeSettings.payments.cod = document.getElementById('pay-cod').checked;
         if(document.getElementById('pay-instapay')) storeSettings.payments.instapay = document.getElementById('pay-instapay').checked;
         if(document.getElementById('pay-visa')) storeSettings.payments.visa = document.getElementById('pay-visa').checked;
@@ -789,6 +821,7 @@ async function saveStoreSettings() {
             instagram: newIg,
             about_text: newAbout,
             contact_text: newContact,
+            logo_url: logoUrlFinal,
             updated_at: new Date()
         };
 
@@ -796,9 +829,12 @@ async function saveStoreSettings() {
         if (upsertErr) throw upsertErr;
 
         renderDynamicContent();
-        showToast("تم حفظ وتثبيت الإعدادات والغلاف بنجاح دائم!");
+        updateHeaderLogoView();
+        showToast("تم حفظ وتثبيت الإعدادات والغلاف والشعار بنجاح دائم!");
         if(heroFileInput) heroFileInput.value = '';
+        if(logoFileInput) logoFileInput.value = '';
         if(document.getElementById('admin-hero-bg')) document.getElementById('admin-hero-bg').value = heroBgUrl;
+        if(document.getElementById('admin-logo-url')) document.getElementById('admin-logo-url').value = logoUrlFinal;
     } catch (err) {
         alert("حدث خطأ أثناء الحفظ: " + err.message);
     }
