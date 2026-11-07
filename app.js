@@ -20,8 +20,8 @@ let storeSettings = {
     whatsapp: '201108396536',
     fb: 'https://www.facebook.com/share/1GwJYnjzeE/',
     ig: 'https://www.instagram.com/eval_store_fashion?psln=ejN5dTl4czhxdDE=',
-    aboutText: 'متجر EVAL يقدم أرقى تصاميم الأزياء المصنوعة بعناية لتلبي ذوقك الفريد.',
-    contactText: 'للاستفسارات والطلب المباشر، يرافقكم فريقنا عبر الواتساب والهاتف المتاح طوال أيام الأسبوع.',
+    aboutText: 'نؤمن في EVAL بأن الأناقة الحقيقية هي انعكاس للشخصية والفرادة. وُلدت علامتنا لتلبي تطلعات أصحاب الذوق الرفيع، حيث ندمج الأصالة بالتصاميم المعاصرة لنقدم لكم قطعاً حصرية صُنعت بكل عناية وإتقان.',
+    contactText: 'يسعدنا دائماً تواصلكم واستقبال استفساراتكم وآرائكم. فريق خدمة العملاء في EVAL في خدمتكم على مدار الساعة لتقديم الدعم والمساعدة.',
     payments: { cod: true, instapay: true, visa: true, bank: true }
 };
 
@@ -274,7 +274,6 @@ function renderDynamicContent() {
         heroSection.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('${bgUrl}')`;
     }
 
-    // تحديث النصوص الخاصة بالغلاف
     if(document.getElementById('hero-display-badge')) document.getElementById('hero-display-badge').innerText = storeSettings.heroBadge;
     if(document.getElementById('hero-display-title')) document.getElementById('hero-display-title').innerText = storeSettings.heroTitle;
     if(document.getElementById('hero-display-desc')) document.getElementById('hero-display-desc').innerText = storeSettings.heroDesc;
@@ -684,7 +683,6 @@ async function saveStoreSettings() {
     showToast("جاري حفظ الإعدادات والغلاف والنصوص...");
 
     try {
-        // رفع صورة الغلاف من الموبايل إذا تم اختيارها
         if (heroFileInput && heroFileInput.files.length > 0) {
             const file = heroFileInput.files[0];
             const fileName = `hero_${Date.now()}.${file.name.split('.').pop()}`;
@@ -723,7 +721,9 @@ async function saveStoreSettings() {
         if(document.getElementById('pay-visa')) storeSettings.payments.visa = document.getElementById('pay-visa').checked;
         if(document.getElementById('pay-bank')) storeSettings.payments.bank = document.getElementById('pay-bank').checked;
 
+        // استخدام معرف ثابت رقم 1 لضمان تحديث الصف الأساسي دائماً وتجنب تكرار الصفوف
         const payload = {
+            id: 1,
             hero_bg: heroBgUrl,
             hero_badge: newHeroBadge,
             hero_title: newHeroTitle,
@@ -737,15 +737,8 @@ async function saveStoreSettings() {
             updated_at: new Date()
         };
 
-        const { data: existing, error: fetchErr } = await _supabase.from('site_settings').select('id').limit(1).maybeSingle();
-        
-        if (existing && existing.id) {
-            const { error: updateErr } = await _supabase.from('site_settings').update(payload).eq('id', existing.id);
-            if (updateErr) throw updateErr;
-        } else {
-            const { error: insertErr } = await _supabase.from('site_settings').insert([payload]);
-            if (insertErr) throw insertErr;
-        }
+        const { error: upsertErr } = await _supabase.from('site_settings').upsert(payload);
+        if (upsertErr) throw upsertErr;
 
         renderDynamicContent();
         showToast("تم حفظ وتثبيت الإعدادات والغلاف بنجاح دائم!");
