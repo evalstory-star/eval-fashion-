@@ -37,8 +37,7 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed 
-bottom-5 left-5 z-50 bg-emerald-800 text-white px-5 py-3 rounded-2xl shadow-xl font-bold text-sm transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2">
+    <div id="toast" class="fixed bottom-5 left-5 z-50 bg-emerald-800 text-white px-5 py-3 rounded-2xl shadow-xl font-bold text-sm transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2">
         <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
         <span id="toast-message">تمت العملية بنجاح</span>
     </div>
@@ -47,8 +46,7 @@ bottom-5 left-5 z-50 bg-emerald-800 text-white px-5 py-3 rounded-2xl shadow-xl f
     <header class="sticky top-0 z-40 glass-nav border-b border-gray-100 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <div class="flex items-center gap-3 cursor-pointer select-none" 
-onclick="switchTab('store')">
+                <div class="flex items-center gap-3 cursor-pointer select-none" onclick="switchTab('store')">
                     <div class="w-10 h-10 bg-emerald-800 text-white flex items-center justify-center rounded-xl font-bold text-xl shadow-md">E</div>
                     <div>
                         <h1 class="text-2xl font-black text-gray-900 tracking-wider">EVAL</h1>
@@ -58,15 +56,13 @@ onclick="switchTab('store')">
 
                 <div class="flex items-center gap-6">
                     <nav class="hidden md:flex items-center gap-4 text-sm font-bold text-gray-700">
-                        <button 
-onclick="switchTab('store')" class="hover:text-emerald-800 transition-all">المنتجات</button>
+                        <button onclick="switchTab('store')" class="hover:text-emerald-800 transition-all">المنتجات</button>
                         <button onclick="switchTab('contact')" class="hover:text-emerald-800 transition-all">التواصل معنا</button>
                         <button onclick="switchTab('reviews')" class="hover:text-emerald-800 transition-all">التعليقات</button>
                         <button onclick="switchTab('about')" class="hover:text-emerald-800 transition-all">من نحن</button>
                     </nav>
 
-                    <button onclick="switchTab('cart')" class="relative p-2.5 rounded-xl bg-gray-100 text-gray-800 
-hover:bg-emerald-800 hover:text-white transition-all">
+                    <button onclick="switchTab('cart')" class="relative p-2.5 rounded-xl bg-gray-100 text-gray-800 hover:bg-emerald-800 hover:text-white transition-all">
                         <i class="fa-solid fa-cart-shopping text-lg"></i>
                         <span id="cart-count" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow">0</span>
                     </button>
@@ -74,8 +70,7 @@ hover:bg-emerald-800 hover:text-white transition-all">
             </div>
             <div class="flex md:hidden items-center justify-around py-2 border-t border-gray-100 text-xs font-bold text-gray-700">
                 <button onclick="switchTab('store')">المنتجات</button>
-                <button 
-onclick="switchTab('contact')">التواصل معنا</button>
+                <button onclick="switchTab('contact')">التواصل معنا</button>
                 <button onclick="switchTab('reviews')">التعليقات</button>
                 <button onclick="switchTab('about')">من نحن</button>
             </div>
@@ -87,8 +82,7 @@ onclick="switchTab('contact')">التواصل معنا</button>
 
         <!-- Store View -->
         <section id="view-store" class="space-y-8">
-            <div id="hero-banner-section" 
-class="hero-bg rounded-3xl p-10 sm:p-20 text-white shadow-2xl relative overflow-hidden text-center flex flex-col items-center justify-center space-y-4">
+            <div id="hero-banner-section" class="hero-bg rounded-3xl p-10 sm:p-20 text-white shadow-2xl relative overflow-hidden text-center flex flex-col items-center justify-center space-y-4">
                 <span id="hero-display-badge" class="px-4 py-1.5 bg-emerald-500/30 text-emerald-200 text-xs font-bold rounded-full border border-emerald-400/40 backdrop-blur-md">موسم الأزياء الراقية</span>
                 <h2 id="hero-display-title" class="text-4xl sm:text-7xl font-black tracking-widest text-white drop-shadow-lg">EVAL</h2>
                 <p id="hero-display-desc" class="text-gray-200 text-sm sm:text-lg max-w-lg font-medium">تصاميم حصرية وخامات فريدة صنعت خصيصاً لتناسب ذوقك الراقي وتمنحك إطلالة لا تُنسى.</p>
@@ -110,8 +104,7 @@ class="hero-bg rounded-3xl p-10 sm:p-20 text-white shadow-2xl relative overflow-
         </section>
 
         <!-- Product Details Modal -->
-        <div id="product-detail-modal" class="fixed inset-0 bg-gray-900/70 backdrop-blur-md z-50 flex 
-items-center justify-center p-4 hidden">
+        <div id="product-detail-modal" class="fixed inset-0 bg-gray-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-y-auto max-h-[90vh]">
                 <button onclick="closeProductDetailModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-2xl"></i></button>
                 <div id="modal-product-content" class="grid grid-cols-1 sm:grid-cols-2 gap-8"></div>
@@ -119,8 +112,7 @@ items-center justify-center p-4 hidden">
         </div>
 
         <!-- Cart View -->
-        <section id="view-cart" class="hidden max-w-3xl mx-auto 
-space-y-6">
+        <section id="view-cart" class="hidden max-w-3xl mx-auto space-y-6">
             <h2 class="text-2xl font-bold text-gray-900 border-b pb-3">سلة المشتريات وإتمام الطلب</h2>
             <div id="cart-items" class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4"></div>
             
@@ -148,8 +140,7 @@ space-y-6">
 
         <!-- Reviews View -->
         <section id="view-reviews" class="hidden max-w-3xl mx-auto space-y-8">
-            <div class="bg-white p-8 
-rounded-3xl shadow-sm border border-gray-100 space-y-4">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 space-y-4">
                 <h2 class="text-2xl font-black text-gray-900">أضف تقييمك أو تعليقك</h2>
                 <form onsubmit="submitReview(event)" class="space-y-4">
                     <input type="text" id="review-name" required class="w-full p-3 border rounded-xl text-sm" placeholder="اسمك الكريم">
@@ -176,8 +167,7 @@ rounded-3xl shadow-sm border border-gray-100 space-y-4">
         <!-- About Us View -->
         <section id="view-about" class="hidden max-w-3xl mx-auto space-y-6 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
             <h2 class="text-2xl font-black text-gray-900 border-b pb-4">من نحن</h2>
-            <div id="dynamic-about-content" class="text-gray-700 space-y-4 text-base 
-leading-relaxed"></div>
+            <div id="dynamic-about-content" class="text-gray-700 space-y-4 text-base leading-relaxed"></div>
         </section>
 
         <!-- Admin View -->
@@ -187,8 +177,7 @@ leading-relaxed"></div>
                     <h2 class="text-2xl font-black text-gray-900" id="admin-welcome-title">لوحة التحكم</h2>
                     <p class="text-xs text-gray-500" id="admin-role-badge">صلاحية المسؤول</p>
                 </div>
-                <button onclick="logoutAdmin()" class="px-4 
-py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl font-bold text-sm transition-all">
+                <button onclick="logoutAdmin()" class="px-4 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl font-bold text-sm transition-all">
                     تسجيل الخروج <i class="fa-solid fa-right-from-bracket mr-1"></i>
                 </button>
             </div>
@@ -207,8 +196,7 @@ py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl font-bold text-sm tra
                         <p class="text-xs font-bold text-gray-400">إجمالي التعليقات</p>
                         <h4 id="stat-reviews-count" class="text-2xl font-black text-gray-900 mt-1">0</h4>
                     </div>
-                    <div class="w-12 h-12 bg-amber-50 text-amber-700 rounded-xl flex items-center justify-center text-xl font-bold"><i 
-class="fa-solid fa-comments"></i></div>
+                    <div class="w-12 h-12 bg-amber-50 text-amber-700 rounded-xl flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-comments"></i></div>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
                     <div>
@@ -226,9 +214,10 @@ class="fa-solid fa-comments"></i></div>
                 </h3>
                 
                 <form onsubmit="handleCreateStaff(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-800 p-4 rounded-xl">
+                    <input type="email" id="staff-email" required placeholder="البريد الإلكتروني للموظف" class="p-2.5 rounded-lg text-sm text-gray-900 font-semibold">
                     <input type="text" id="staff-user" required placeholder="اسم المستخدم" class="p-2.5 rounded-lg text-sm text-gray-900 font-semibold">
                     <input type="password" id="staff-pass" required placeholder="كلمة المرور" class="p-2.5 rounded-lg text-sm text-gray-900 font-semibold">
-                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition-all">+ إنشاء حساب موظف</button>
+                    <button type="submit" class="col-span-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition-all">+ إنشاء حساب موظف</button>
                 </form>
 
                 <div class="space-y-2">
@@ -243,8 +232,7 @@ class="fa-solid fa-comments"></i></div>
                     <i class="fa-solid fa-tags text-emerald-700"></i> إدارة أقسام المتجر (إضافة وحذف)
                 </h3>
                 <form onsubmit="handleAddCategory(event)" class="flex gap-2">
-                    <input type="text" id="new-category-name" required placeholder="اسم القسم الجديد (مثال: حقائب، أحذية...)" class="flex-grow p-3 border 
-rounded-xl text-sm">
+                    <input type="text" id="new-category-name" required placeholder="اسم القسم الجديد (مثال: حقائب، أحذية...)" class="flex-grow p-3 border rounded-xl text-sm">
                     <button type="submit" class="px-6 py-3 bg-emerald-800 text-white font-bold rounded-xl hover:bg-emerald-900 text-sm">إضافة قسم</button>
                 </form>
                 <div id="admin-cat-list" class="flex flex-wrap gap-2 pt-2"></div>
@@ -253,8 +241,7 @@ rounded-xl text-sm">
             <!-- Store Settings -->
             <div id="store-settings-panel" class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-6 space-y-4 shadow-sm">
                 <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-emerald-700"></i> إعدادات المتجر 
-والتواصل وشريط الإعلانات وصورة الغلاف والنصوص
+                    <i class="fa-solid fa-sliders text-emerald-700"></i> إعدادات المتجر والتواصل وشريط الإعلانات وصورة الغلاف والنصوص
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="col-span-full bg-white p-4 rounded-xl border">
@@ -279,8 +266,7 @@ rounded-xl text-sm">
 
                         <div>
                             <label class="block text-xs font-bold text-gray-800 mb-1">العنوان الرئيسي للغلاف:</label>
-                            <input type="text" id="admin-hero-title" class="w-full 
-p-3 rounded-xl border text-sm font-semibold bg-gray-50" placeholder="مثال: EVAL">
+                            <input type="text" id="admin-hero-title" class="w-full p-3 rounded-xl border text-sm font-semibold bg-gray-50" placeholder="مثال: EVAL">
                         </div>
 
                         <div>
@@ -299,16 +285,14 @@ p-3 rounded-xl border text-sm font-semibold bg-gray-50" placeholder="مثال: E
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">رابط انستغرام</label>
-                        <input type="text" id="admin-ig" class="w-full p-3 rounded-xl border text-sm 
-font-semibold bg-white">
+                        <input type="text" id="admin-ig" class="w-full p-3 rounded-xl border text-sm font-semibold bg-white">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-2">طرق الدفع المتاحة:</label>
                         <div class="grid grid-cols-2 gap-2 text-xs font-bold">
                             <label class="flex items-center gap-2 bg-white p-2.5 rounded-lg border cursor-pointer"><input type="checkbox" id="pay-cod"> الدفع عند الاستلام</label>
                             <label class="flex items-center gap-2 bg-white p-2.5 rounded-lg border cursor-pointer"><input type="checkbox" id="pay-instapay"> InstaPay / فودافون كاش</label>
-                            <label 
-class="flex items-center gap-2 bg-white p-2.5 rounded-lg border cursor-pointer"><input type="checkbox" id="pay-visa"> Visa / Master</label>
+                            <label class="flex items-center gap-2 bg-white p-2.5 rounded-lg border cursor-pointer"><input type="checkbox" id="pay-visa"> Visa / Master</label>
                             <label class="flex items-center gap-2 bg-white p-2.5 rounded-lg border cursor-pointer"><input type="checkbox" id="pay-bank"> تحويل بنكي</label>
                         </div>
                     </div>
@@ -316,8 +300,7 @@ class="flex items-center gap-2 bg-white p-2.5 rounded-lg border cursor-pointer">
                 <div class="space-y-4 pt-2">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">صفحة "من نحن"</label>
-                        <textarea id="admin-about-text" rows="3" 
-class="w-full p-3 rounded-xl border text-sm bg-white"></textarea>
+                        <textarea id="admin-about-text" rows="3" class="w-full p-3 rounded-xl border text-sm bg-white"></textarea>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">صفحة "التواصل معنا"</label>
@@ -334,8 +317,7 @@ class="w-full p-3 rounded-xl border text-sm bg-white"></textarea>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <input type="text" id="p-name" required class="p-3 border rounded-xl text-sm" placeholder="اسم القطعة">
                         <select id="p-category" required class="p-3 border rounded-xl text-sm"></select>
-                        <input type="number" 
-id="p-price" required class="p-3 border rounded-xl text-sm" placeholder="السعر (ج.م)">
+                        <input type="number" id="p-price" required class="p-3 border rounded-xl text-sm" placeholder="السعر (ج.م)">
                         <input type="text" id="p-fabric" class="p-3 border rounded-xl text-sm" placeholder="نوع الخامة">
                         <div class="col-span-full">
                             <textarea id="p-desc" rows="2" class="w-full p-3 border rounded-xl text-sm" placeholder="وصف القطعة..."></textarea>
@@ -345,14 +327,12 @@ id="p-price" required class="p-3 border rounded-xl text-sm" placeholder="الس�
                     <!-- Sizes Selector -->
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">المقاسات المتاحة:</label>
-                        <div class="flex 
-flex-wrap gap-2 text-xs font-bold" id="sizes-selector">
+                        <div class="flex flex-wrap gap-2 text-xs font-bold" id="sizes-selector">
                             <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="XS"> XS</label>
                             <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="S"> S</label>
                             <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="M"> M</label>
                             <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="L" checked> L</label>
-                            <label class="px-3 
-py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="XL"> XL</label>
+                            <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="XL"> XL</label>
                             <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="XXL"> XXL</label>
                             <label class="px-3 py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="Free Size"> Free Size</label>
                         </div>
@@ -394,28 +374,31 @@ py-1.5 border rounded-lg cursor-pointer"><input type="checkbox" value="XL"> XL</
             <div class="flex justify-center items-center gap-6 text-2xl">
                 <a id="footer-fb" href="#" target="_blank" class="hover:text-emerald-400 transition-all"><i class="fa-brands fa-facebook"></i></a>
                 <a id="footer-ig" href="#" target="_blank" class="hover:text-emerald-400 transition-all"><i class="fa-brands fa-instagram"></i></a>
-                <a id="footer-wa" href="#" target="_blank" class="hover:text-emerald-400 
-transition-all"><i class="fa-brands fa-whatsapp"></i></a>
+                <a id="footer-wa" href="#" target="_blank" class="hover:text-emerald-400 transition-all"><i class="fa-brands fa-whatsapp"></i></a>
             </div>
             <p class="text-xs text-gray-400">جميع الحقوق محفوظة © 2026 EVAL - أناقة وأصالة</p>
         </div>
     </footer>
 
-    <!-- Auth Modal -->
+    <!-- Auth Modal (محدث ليعتمد على البريد الإلكتروني الإداري الآمن) -->
     <div id="auth-modal" class="fixed inset-0 bg-gray-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl p-8 max-w-sm w-full space-y-6 shadow-2xl relative">
-            <button onclick="closeAuthModal()" class="absolute top-4 left-4 
-text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full space-y-6 shadow-2xl relative">
+            <button onclick="closeAuthModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             <div class="text-center space-y-2">
                 <div class="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center mx-auto text-xl font-bold"><i class="fa-solid fa-user-shield"></i></div>
                 <h3 class="text-xl font-bold text-gray-900">تسجيل الدخول للنظام</h3>
-                <p class="text-xs text-gray-500">حساب المدير أو الموظفين</p>
+                <p class="text-xs text-gray-500">حساب المدير أو الموظفين عبر البريد الإلكتروني</p>
             </div>
             <form onsubmit="handleLogin(event)" class="space-y-4">
-                <input type="text" id="login-user" required class="w-full 
-p-3 border rounded-xl text-sm" placeholder="اسم المستخدم">
-                <input type="password" id="login-pass" required class="w-full p-3 border rounded-xl text-sm" placeholder="كلمة المرور">
-                <button type="submit" class="w-full py-3 bg-emerald-800 text-white font-bold rounded-xl hover:bg-emerald-900 shadow-md">دخول للنظام</button>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">البريد الإلكتروني (Email):</label>
+                    <input type="email" id="login-email" required class="w-full p-3 border rounded-xl text-sm font-bold bg-gray-50" placeholder="ibrahim.a.habo1.552.eval@eval.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">كلمة المرور:</label>
+                    <input type="password" id="login-pass" required class="w-full p-3 border rounded-xl text-sm" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full py-3 bg-emerald-800 text-white font-bold rounded-xl hover:bg-emerald-900 shadow-md">دخول آمن للنظام</button>
             </form>
         </div>
     </div>
