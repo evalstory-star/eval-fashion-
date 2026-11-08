@@ -107,11 +107,37 @@ export default function App() {
   const [stylistModalOpen, setStylistModalOpen] = useState(false);
   const [adminModalOpen, setAdminModalOpen] = useState(false);
   const [stylistInitialQuery, setStylistInitialQuery] = useState('');
-
-  // UI States
+  const [activeSection, setActiveSection] = useState<string>('home');
   const [announcementVisible, setAnnouncementVisible] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState('products');
+
+  // Hidden Admin Login Triggers (URL #admin or ?admin=true, or Ctrl+Shift+A)
+  useEffect(() => {
+    const checkHiddenAdminTrigger = () => {
+      const hash = window.location.hash.toLowerCase();
+      const search = window.location.search.toLowerCase();
+      if (hash === '#admin' || hash === '#manager' || search.includes('admin=true')) {
+        setAdminModalOpen(true);
+      }
+    };
+
+    checkHiddenAdminTrigger();
+    window.addEventListener('hashchange', checkHiddenAdminTrigger);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a' || e.key === 'ش')) {
+        e.preventDefault();
+        setAdminModalOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('hashchange', checkHiddenAdminTrigger);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -481,6 +507,7 @@ export default function App() {
           setStylistInitialQuery('');
           setStylistModalOpen(true);
         }}
+        onOpenAdmin={() => setAdminModalOpen(true)}
       />
 
       {/* Product Detail Modal */}

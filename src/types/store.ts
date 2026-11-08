@@ -68,3 +68,22 @@ export interface SecurityIssue {
   remediation: string;
   codeSnippet?: string;
 }
+
+export interface StaffPermissions {
+  canViewSales: boolean;
+  canManageProducts: boolean;
+  canManageCategories: boolean;
+  canEditSettings: boolean;
+}
+
+export interface StaffAccount {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash: string;
+  role: 'admin' | 'staff';
+  isActive: boolean;
+  permissions: StaffPermissions;
+  createdAt: string;
+}
+

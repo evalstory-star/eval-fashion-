@@ -28,6 +28,23 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigate,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const logoClicksRef = React.useRef(0);
+  const clickTimeoutRef = React.useRef<any>(null);
+
+  const handleBrandClick = () => {
+    onNavigate('products');
+    logoClicksRef.current += 1;
+    if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+
+    if (logoClicksRef.current >= 4) {
+      logoClicksRef.current = 0;
+      onOpenAdmin();
+    } else {
+      clickTimeoutRef.current = setTimeout(() => {
+        logoClicksRef.current = 0;
+      }, 2500);
+    }
+  };
 
   const navLinks = [
     { id: 'products', label: 'المنتجات' },
@@ -40,22 +57,24 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-stone-200/80 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-8 h-20">
-          {/* Zone 1: Brand Wordmark / Logo */}
+          {/* Zone 1: Brand Wordmark / Logo with Secret Admin Trigger on 4 Clicks */}
           <div className="flex items-center gap-3 shrink-0">
             <button
-              onClick={() => onNavigate('products')}
-              className="text-left group flex items-center gap-2.5 cursor-pointer focus:outline-none"
+              onClick={handleBrandClick}
+              className="text-left group flex items-center gap-2.5 cursor-pointer focus:outline-none select-none"
+              title="EVAL Fashion"
             >
               {settings.logoUrl ? (
-                <img
-                  src={settings.logoUrl}
-                  alt={settings.logoText || 'EVAL'}
-                  className="h-10 max-w-[140px] object-contain rounded-md"
-                  onError={(e) => {
-                    // Fallback to text if image URL fails
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
+                <div className="w-10 h-10 rounded-xl overflow-hidden border border-stone-200 shadow-2xs bg-stone-100 shrink-0">
+                  <img
+                    src={settings.logoUrl}
+                    alt={settings.logoText || 'EVAL'}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                </div>
               ) : null}
 
               <div className="flex items-baseline gap-2">
@@ -191,17 +210,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Sparkles className="w-4 h-4" />
               <span>مستشار الأزياء الذكي (Gemini)</span>
-            </button>
-
-            <button
-              onClick={() => {
-                onOpenAdmin();
-                setMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-2 text-right py-2 px-3 text-sm font-semibold text-stone-600 hover:bg-stone-100 rounded-lg"
-            >
-              <Lock className="w-4 h-4" />
-              <span>لوحة الإدارة المشفرة</span>
             </button>
           </div>
         </div>
