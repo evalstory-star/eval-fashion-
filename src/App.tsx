@@ -44,7 +44,7 @@ export default function App() {
   const [categories, setCategories] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('eval_store_categories');
-      return saved ? JSON.parse(saved) : (settings.categories || ['عبايات', 'طرح', 'فساتين', 'ملابس كاجوال']);
+      return saved ? JSON.parse(saved) : (INITIAL_SETTINGS.categories || ['عبايات', 'طرح', 'فساتين', 'ملابس كاجوال']);
     } catch {
       return ['عبايات', 'طرح', 'فساتين', 'ملابس كاجوال'];
     }
