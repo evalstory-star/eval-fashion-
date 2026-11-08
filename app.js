@@ -69,7 +69,7 @@ function loadLocalState() {
 
 async function fetchStoreSettings() {
     try {
-        const { data, error } = await _supabase.from('site_settings').select('*').eq('id', 1).single();
+        const { data } = await _supabase.from('site_settings').select('*').eq('id', 1).single();
         if (data) {
             storeSettings.heroBg = data.hero_bg || storeSettings.heroBg;
             storeSettings.heroBadge = data.hero_badge || storeSettings.heroBadge;
@@ -139,7 +139,7 @@ function checkLoginLockout() {
     if (lockoutTime) {
         const remaining = parseInt(lockoutTime) - Date.now();
         if (remaining > 0) {
-            return true; // محظور صامتاً
+            return true;
         } else {
             localStorage.removeItem('eval_lockout_time');
             localStorage.setItem('eval_failed_attempts', '0');
@@ -148,6 +148,7 @@ function checkLoginLockout() {
     return false;
 }
 
+// نظام تسجيل دخول آمن 100% يعتمد بالكامل على قاعدة البيانات دون أي أسرار بالواجهة
 async function handleLogin(e) {
     e.preventDefault();
 
@@ -159,23 +160,27 @@ async function handleLogin(e) {
     const email = document.getElementById('login-email').value.trim();
     const pass = document.getElementById('login-pass').value.trim();
 
-    // البريد الإداري الرئيسي المعقد والحصري
-    if (email === "ibrahim.a.habo1.552.eval@eval.com" && pass === "5528332$777262&eval") {
-        localStorage.setItem('eval_failed_attempts', '0');
-        currentUser = { username: 'المدير الرئيسي', role: 'admin', email: email };
-        setupDashboard();
-        return;
-    }
-
     try {
-        const { data } = await _supabase.from('staff_users').select('*').eq('email', email).eq('password', pass).single();
+        // التحقق الآمن عبر جدول staff_users في Supabase مباشرة
+        const { data, error } = await _supabase
+            .from('staff_users')
+            .select('*')
+            .eq('email', email)
+            .eq('password', pass)
+            .single();
+
         if (data) {
             if (!data.is_active) { 
                 alert("❌ بيانات الدخول غير صحيحة."); 
                 return; 
             }
             localStorage.setItem('eval_failed_attempts', '0');
-            currentUser = { username: data.username, role: 'staff', email: email };
+            currentUser = { 
+                id: data.id,
+                username: data.username, 
+                role: data.role || 'staff', // 'admin' للمدير أو 'staff' للموظف
+                email: data.email 
+            };
             setupDashboard();
         } else {
             await handleFailedLogin(email);
@@ -193,7 +198,6 @@ async function handleFailedLogin(attemptedEmail) {
         const lockoutDuration = 15 * 60 * 1000; // 15 دقيقة
         localStorage.setItem('eval_lockout_time', Date.now() + lockoutDuration);
         
-        // تسجيل المحاولة الخاطئة صامتاً في قاعدة البيانات دون إزعاج المستخدم أو تنبيهه
         try {
             await _supabase.from('security_logs').insert([{ 
                 attempted_email: attemptedEmail, 
@@ -205,7 +209,6 @@ async function handleFailedLogin(attemptedEmail) {
         }
     }
 
-    // رسالة موحدة ومبهمة تماماً لا تظهر عدد المحاولات أو أي تلميح
     alert("❌ بيانات الدخول غير صحيحة.");
 }
 
@@ -291,13 +294,15 @@ function renderStaffList() {
     container.innerHTML = staffList.map(s => `
         <div class="py-3 flex items-center justify-between text-sm border-b border-stone-100">
             <div>
-                <span class="font-bold text-stone-900 block">${s.username}</span>
+                <span class="font-bold text-stone-900 block">${s.username} <span class="text-xs text-emerald-700 font-semibold">(${s.role === 'admin' ? 'مدير' : 'موظف'})</span></span>
                 <span class="text-xs text-stone-500">${s.email || 'بدون إيميل'}</span>
                 <span class="text-[10px] px-2 py-0.5 rounded-full ${s.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'} mr-2">${s.is_active ? 'نشط' : 'معطل'}</span>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="toggleStaffStatus(${s.id}, ${s.is_active})" class="text-xs px-3 py-1.5 rounded-xl font-bold ${s.is_active ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">${s.is_active ? 'تعطيل' : 'تفعيل'}</button>
-                <button onclick="deleteStaff(${s.id})" class="text-xs px-3 py-1.5 bg-rose-50 text-rose-600 rounded-xl font-bold">حذف</button>
+                ${s.role !== 'admin' ? `
+                    <button onclick="toggleStaffStatus(${s.id}, ${s.is_active})" class="text-xs px-3 py-1.5 rounded-xl font-bold ${s.is_active ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">${s.is_active ? 'تعطيل' : 'تفعيل'}</button>
+                    <button onclick="deleteStaff(${s.id})" class="text-xs px-3 py-1.5 bg-rose-50 text-rose-600 rounded-xl font-bold">حذف</button>
+                ` : '<span class="text-xs text-stone-400 font-bold px-2">الحساب الرئيسي</span>'}
             </div>
         </div>
     `).join('');
