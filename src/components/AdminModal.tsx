@@ -35,6 +35,7 @@ import { Product, StoreSettings, StaffAccount, StaffPermissions } from '../types
 import { sha256 } from '../utils/security';
 import { processImageFile } from '../utils/imageUpload';
 import { SalesAnalytics } from './SalesAnalytics';
+import { fetchCloudStaffAccounts, syncStaffAccountsToCloud } from '../services/supabaseSync';
 
 interface AdminModalProps {
   isOpen: boolean;
@@ -116,7 +117,18 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     }
   });
 
-  // Save staff list whenever it changes
+  // Sync with Supabase cloud on open so any phone gets updated accounts instantly
+  useEffect(() => {
+    if (isOpen) {
+      fetchCloudStaffAccounts().then((cloudAccounts) => {
+        if (cloudAccounts && cloudAccounts.length > 0) {
+          setStaffList(cloudAccounts);
+        }
+      });
+    }
+  }, [isOpen]);
+
+  // Save staff list to localStorage whenever it changes
   useEffect(() => {
     try {
       localStorage.setItem('eval_staff_accounts', JSON.stringify(staffList));
@@ -275,8 +287,19 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       return;
     }
 
-    // 2. Check if Authorized Staff / Employee
-    const foundStaff = staffList.find(
+    // 2. Check if Authorized Staff / Employee (Real-time Cloud Check)
+    let currentStaffList = staffList;
+    try {
+      const cloudAccounts = await fetchCloudStaffAccounts();
+      if (cloudAccounts && cloudAccounts.length > 0) {
+        currentStaffList = cloudAccounts;
+        setStaffList(cloudAccounts);
+      }
+    } catch {
+      // fallback to current in-memory staffList
+    }
+
+    const foundStaff = currentStaffList.find(
       (s) => s.email.trim().toLowerCase() === trimmedEmail
     );
 
@@ -370,7 +393,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
         createdAt: new Date().toISOString().split('T')[0],
       };
 
-      setStaffList((prev) => [newStaff, ...prev]);
+      const updatedStaff = [newStaff, ...staffList];
+      setStaffList(updatedStaff);
+      syncStaffAccountsToCloud(updatedStaff);
       setStaffCreateSuccess(true);
       setNewStaffName('');
       setNewStaffEmail('');
@@ -383,23 +408,25 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   };
 
   const handleToggleStaffStatus = (staffId: string) => {
-    setStaffList((prev) =>
-      prev.map((s) => (s.id === staffId ? { ...s, isActive: !s.isActive } : s))
-    );
+    const updated = staffList.map((s) => (s.id === staffId ? { ...s, isActive: !s.isActive } : s));
+    setStaffList(updated);
+    syncStaffAccountsToCloud(updated);
   };
 
   const handleDeleteStaff = (staffId: string, staffName: string) => {
     if (window.confirm(`هل أنتِ متأكدة من حذف حساب الموظف "${staffName}" نهائياً؟`)) {
-      setStaffList((prev) => prev.filter((s) => s.id !== staffId));
+      const updated = staffList.filter((s) => s.id !== staffId);
+      setStaffList(updated);
+      syncStaffAccountsToCloud(updated);
     }
   };
 
   const handleSaveStaffPermissions = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingStaff) return;
-    setStaffList((prev) =>
-      prev.map((s) => (s.id === editingStaff.id ? editingStaff : s))
-    );
+    const updated = staffList.map((s) => (s.id === editingStaff.id ? editingStaff : s));
+    setStaffList(updated);
+    syncStaffAccountsToCloud(updated);
     setEditingStaff(null);
   };
 
@@ -1359,9 +1386,12 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                       <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
                         <Users className="w-4 h-4 text-emerald-800" />
                         <span>إدارة حسابات الموظفين وصلاحيات الوصول</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                          مزامنة سحابية نشطة ☁️
+                        </span>
                       </h4>
                       <p className="text-xs text-stone-500">
-                        تحكم كامل للمدير العام: إضافة موظفين جدد، تحديد الصلاحيات المسموحة، أو تعطيل/حذف أي حساب فوراً.
+                        تحكم كامل للمدير العام: إضافة موظفين جدد، تحديد الصلاحيات، أو تعطيل/حذف أي حساب فوراً. الحسابات تعمل على جميع أجهزة الموظفين لحظياً.
                       </p>
                     </div>
 
