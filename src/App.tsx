@@ -6,7 +6,6 @@ import { ProductModal } from './components/ProductModal';
 import { CartDrawer } from './components/CartDrawer';
 import { WishlistDrawer } from './components/WishlistDrawer';
 import { AIStylistModal } from './components/AIStylistModal';
-import { SecurityCenterModal } from './components/SecurityCenterModal';
 import { AdminModal } from './components/AdminModal';
 import { ReviewsSection } from './components/ReviewsSection';
 import { AboutSection } from './components/AboutSection';
@@ -102,8 +101,6 @@ export default function App() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [wishlistOpen, setWishlistOpen] = useState(false);
-  const [securityModalOpen, setSecurityModalOpen] = useState(false);
-  const [securityInitialTab, setSecurityInitialTab] = useState<'issues' | 'sql' | 'xss-test' | 'export'>('issues');
   const [stylistModalOpen, setStylistModalOpen] = useState(false);
   const [adminModalOpen, setAdminModalOpen] = useState(false);
   const [stylistInitialQuery, setStylistInitialQuery] = useState('');
@@ -111,9 +108,9 @@ export default function App() {
   const [announcementVisible, setAnnouncementVisible] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Hidden Admin Login Triggers (URL #admin or ?admin=true, or Ctrl+Shift+A)
+  // Single External Entry Point: Strictly via URL outside the UI (e.g. #admin or ?admin=true)
   useEffect(() => {
-    const checkHiddenAdminTrigger = () => {
+    const checkAdminTrigger = () => {
       const hash = window.location.hash.toLowerCase();
       const search = window.location.search.toLowerCase();
       if (hash === '#admin' || hash === '#manager' || search.includes('admin=true')) {
@@ -121,21 +118,11 @@ export default function App() {
       }
     };
 
-    checkHiddenAdminTrigger();
-    window.addEventListener('hashchange', checkHiddenAdminTrigger);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a' || e.key === 'ش')) {
-        e.preventDefault();
-        setAdminModalOpen((prev) => !prev);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
+    checkAdminTrigger();
+    window.addEventListener('hashchange', checkAdminTrigger);
 
     return () => {
-      window.removeEventListener('hashchange', checkHiddenAdminTrigger);
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('hashchange', checkAdminTrigger);
     };
   }, []);
 
@@ -376,7 +363,6 @@ export default function App() {
           setStylistInitialQuery('');
           setStylistModalOpen(true);
         }}
-        onOpenAdmin={() => setAdminModalOpen(true)}
         activeSection={activeSection}
         onNavigate={handleNavigate}
       />
@@ -507,7 +493,6 @@ export default function App() {
           setStylistInitialQuery('');
           setStylistModalOpen(true);
         }}
-        onOpenAdmin={() => setAdminModalOpen(true)}
       />
 
       {/* Product Detail Modal */}
@@ -543,13 +528,6 @@ export default function App() {
         onClearWishlist={handleClearWishlist}
       />
 
-      {/* Security & Hardening Center Modal */}
-      <SecurityCenterModal
-        isOpen={securityModalOpen}
-        onClose={() => setSecurityModalOpen(false)}
-        initialTab={securityInitialTab}
-      />
-
       {/* Gemini AI Stylist Modal */}
       <AIStylistModal
         isOpen={stylistModalOpen}
@@ -562,10 +540,16 @@ export default function App() {
         initialQuery={stylistInitialQuery}
       />
 
-      {/* Secure Admin Modal */}
+      {/* Admin Modal - Single Entry Point Strictly Outside the UI via URL (#admin or #manager) */}
       <AdminModal
         isOpen={adminModalOpen}
-        onClose={() => setAdminModalOpen(false)}
+        onClose={() => {
+          setAdminModalOpen(false);
+          const currentHash = window.location.hash.toLowerCase();
+          if (currentHash === '#admin' || currentHash === '#manager') {
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        }}
         products={products}
         onAddProduct={handleAddProduct}
         onUpdateProduct={handleUpdateProduct}
@@ -578,11 +562,6 @@ export default function App() {
         onUpdateSettings={(newSettings) => {
           setSettings(newSettings);
           showToast('تم حفظ التعديلات وإعدادات المتجر بنجاح');
-        }}
-        onOpenSecurity={() => {
-          setAdminModalOpen(false);
-          setSecurityInitialTab('issues');
-          setSecurityModalOpen(true);
         }}
       />
 

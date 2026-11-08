@@ -49,7 +49,6 @@ interface AdminModalProps {
   onDeleteCategory: (category: string) => void;
   settings: StoreSettings;
   onUpdateSettings: (newSettings: StoreSettings) => void;
-  onOpenSecurity: () => void;
 }
 
 interface CurrentUserSession {
@@ -90,7 +89,6 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   onDeleteCategory,
   settings,
   onUpdateSettings,
-  onOpenSecurity,
 }) => {
   if (!isOpen) return null;
 
@@ -584,7 +582,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                 </span>
               </div>
               <p className="text-[11px] sm:text-xs text-stone-400">
-                دخول محمي ومقتصر حصراً على المدير العام والموظفين المصرح لهم
+                إدارة متجر إيفال وفريق العمل
               </p>
             </div>
           </div>
@@ -612,7 +610,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
         </div>
 
         {!isAuthenticated ? (
-          /* Secure Login Form with Strict Verification */
+          /* Login Form */
           <div className="p-6 sm:p-8 max-w-md mx-auto w-full my-auto space-y-5">
             <div className="text-center space-y-1">
               <div className="w-14 h-14 bg-emerald-50 text-emerald-800 rounded-2xl mx-auto flex items-center justify-center mb-3">
@@ -620,7 +618,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               </div>
               <h3 className="text-lg font-black text-stone-900">تسجيل الدخول الإداري</h3>
               <p className="text-xs text-stone-500">
-                لا يحق الدخول إلى لوحة معلومات المتجر إلا للمدير والموظفين المصرح لهم فقط.
+                لوحة معلومات المتجر للمدير والموظفين المصرح لهم فقط.
               </p>
             </div>
 
@@ -628,7 +626,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold rounded-xl text-center space-y-1">
                 <div className="flex items-center justify-center gap-1.5">
                   <ShieldAlert className="w-4 h-4 text-rose-600" />
-                  <span>خطأ في المصادقة:</span>
+                  <span>تنبيه:</span>
                 </div>
                 <div>{loginError}</div>
               </div>
@@ -648,7 +646,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1">كلمة المرور المشفرة</label>
+                <label className="block text-xs font-bold text-stone-700 mb-1">كلمة المرور</label>
                 <input
                   type="password"
                   value={passwordInput}
@@ -664,14 +662,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                 className="w-full py-3 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
               >
                 <Lock className="w-4 h-4 text-emerald-400" />
-                <span>التحقق والدخول إلى لوحة المعلومات</span>
+                <span>دخول إلى لوحة التحكم</span>
               </button>
             </form>
-
-            <div className="p-3.5 bg-stone-50 rounded-xl border border-stone-200 text-[11px] text-stone-600 space-y-1 text-center">
-              <span className="font-bold text-stone-800 block">🔒 نظام أمني مشفر بنظام SHA-256</span>
-              <p>يتم التحقق تلقائياً من هوية وصلاحيات الحساب وتوزيع الصلاحيات بحسب إعدادات المدير.</p>
-            </div>
           </div>
         ) : (
           /* Authenticated Dashboard */
@@ -760,8 +753,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         : 'text-stone-600 hover:text-stone-900 bg-white/70'
                     }`}
                   >
-                    <KeyRound className="w-3.5 h-3.5 text-rose-500" />
-                    <span>أمان حساب المدير 🔐</span>
+                    <KeyRound className="w-3.5 h-3.5 text-stone-600" />
+                    <span>بيانات حساب المدير</span>
                   </button>
                 )}
 
@@ -1429,7 +1422,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-stone-700 mb-1">كلمة المرور المشفرة *</label>
+                          <label className="block text-xs font-bold text-stone-700 mb-1">كلمة المرور *</label>
                           <input
                             type="password"
                             value={newStaffPassword}
@@ -1644,19 +1637,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                 </div>
               )}
 
-              {/* TAB 6: MANAGER EXCLUSIVE - SECURITY & PASSWORD CHANGE 🔐 */}
+              {/* TAB 6: MANAGER EXCLUSIVE - ACCOUNT SETTINGS */}
               {activeTab === 'security' && isSuperAdmin && (
                 <div className="space-y-6">
-                  {/* Vulnerability Resolution Notice */}
-                  <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-emerald-950 space-y-1">
-                    <div className="flex items-center gap-2 font-bold text-sm text-emerald-900">
-                      <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                      <span>الحماية التامة لحساب المدير العام (SHA-256)</span>
-                    </div>
-                    <p className="text-xs text-emerald-800 leading-relaxed">
-                      تم سد الثغرة السابقة بالكامل وتأمين المتجر بحيث يمنع النظام أي دخول عشوائي ولا يسمح إلا للمدير والموظفين المسجلين في القائمة المعتمدة فقط.
-                    </p>
-                  </div>
 
                   {/* Change Password & Email Box */}
                   <div className="p-5 sm:p-6 bg-white rounded-2xl border border-stone-200 shadow-xs space-y-4 max-w-xl">

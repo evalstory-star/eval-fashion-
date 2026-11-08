@@ -1,6 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Sparkles, Lock, Menu, X, Heart } from 'lucide-react';
-
+import { ShoppingBag, Sparkles, Menu, X, Heart } from 'lucide-react';
 import { StoreSettings } from '../types/store';
 
 interface NavbarProps {
@@ -9,9 +8,7 @@ interface NavbarProps {
   onOpenCart: () => void;
   wishlistCount: number;
   onOpenWishlist: () => void;
-  onOpenSecurity?: () => void;
   onOpenStylist: () => void;
-  onOpenAdmin: () => void;
   activeSection: string;
   onNavigate: (section: string) => void;
 }
@@ -23,27 +20,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   wishlistCount,
   onOpenWishlist,
   onOpenStylist,
-  onOpenAdmin,
   activeSection,
   onNavigate,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const logoClicksRef = React.useRef(0);
-  const clickTimeoutRef = React.useRef<any>(null);
 
   const handleBrandClick = () => {
     onNavigate('products');
-    logoClicksRef.current += 1;
-    if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
-
-    if (logoClicksRef.current >= 4) {
-      logoClicksRef.current = 0;
-      onOpenAdmin();
-    } else {
-      clickTimeoutRef.current = setTimeout(() => {
-        logoClicksRef.current = 0;
-      }, 2500);
-    }
   };
 
   const navLinks = [
@@ -57,7 +40,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-stone-200/80 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-8 h-20">
-          {/* Zone 1: Brand Wordmark / Logo with Secret Admin Trigger on 4 Clicks */}
+          {/* Zone 1: Brand Wordmark / Logo */}
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={handleBrandClick}
@@ -132,15 +115,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </button>
 
-            <button
-              onClick={onOpenAdmin}
-              title="لوحة الإدارة الآمنة"
-              className="p-2 text-stone-500 hover:text-stone-900 transition-colors rounded-lg hover:bg-stone-200/50 cursor-pointer"
-              aria-label="لوحة الإدارة"
-            >
-              <Lock className="w-4 h-4" />
-            </button>
-
+            {/* Shopping Bag */}
             <button
               onClick={onOpenCart}
               className="relative inline-flex items-center justify-center gap-2 px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-all shadow-sm cursor-pointer whitespace-nowrap"
