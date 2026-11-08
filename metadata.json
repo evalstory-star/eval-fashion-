@@ -1,0 +1,6 @@
+{
+  "name": "EVAL Fashion | متجر إيفال للأزياء",
+  "description": "متجر إيفال للأزياء الراقية والعبايات في مصر مع فحص الأمان المتكامل، سلة مشتريات واتساب، ومستشار أزياء ذكي مدعوم بالذكاء الاصطناعي.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
