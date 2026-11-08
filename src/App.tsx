@@ -22,9 +22,34 @@ import { Product, CartItem, StoreSettings, Review } from './types/store';
 import { ShieldAlert, Sparkles, X, Check, ArrowUpDown } from 'lucide-react';
 
 export default function App() {
-  // Store States
-  const [settings, setSettings] = useState<StoreSettings>(INITIAL_SETTINGS);
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  // Store States with LocalStorage Persistence
+  const [settings, setSettings] = useState<StoreSettings>(() => {
+    try {
+      const saved = localStorage.getItem('eval_store_settings');
+      return saved ? JSON.parse(saved) : INITIAL_SETTINGS;
+    } catch {
+      return INITIAL_SETTINGS;
+    }
+  });
+
+  const [products, setProducts] = useState<Product[]>(() => {
+    try {
+      const saved = localStorage.getItem('eval_store_products');
+      return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
+    } catch {
+      return INITIAL_PRODUCTS;
+    }
+  });
+
+  const [categories, setCategories] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('eval_store_categories');
+      return saved ? JSON.parse(saved) : (settings.categories || ['عبايات', 'طرح', 'فساتين', 'ملابس كاجوال']);
+    } catch {
+      return ['عبايات', 'طرح', 'فساتين', 'ملابس كاجوال'];
+    }
+  });
+
   const [reviews, setReviews] = useState<Review[]>(INITIAL_REVIEWS);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<Product[]>(() => {
@@ -36,7 +61,31 @@ export default function App() {
     }
   });
 
-  // Save wishlist to localStorage
+  // Save states to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('eval_store_settings', JSON.stringify(settings));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [settings]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('eval_store_products', JSON.stringify(products));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [products]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('eval_store_categories', JSON.stringify(categories));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [categories]);
+
   useEffect(() => {
     try {
       localStorage.setItem('eval_wishlist', JSON.stringify(wishlist));
@@ -222,6 +271,37 @@ export default function App() {
     }
   };
 
+  const handleUpdateProduct = (updatedProd: Product) => {
+    setProducts((prev) => prev.map((p) => (p.id === updatedProd.id ? updatedProd : p)));
+    if (selectedProduct && selectedProduct.id === updatedProd.id) {
+      setSelectedProduct(updatedProd);
+    }
+    showToast('تم حفظ تعديلات المنتج والسعر والخصم بنجاح');
+  };
+
+  const handleAddCategory = (newCat: string) => {
+    const trimmed = newCat.trim();
+    if (!trimmed) return;
+    if (categories.includes(trimmed) || trimmed === 'الكل') {
+      showToast('هذا القسم موجود بالفعل');
+      return;
+    }
+    setCategories((prev) => [...prev, trimmed]);
+    showToast(`تمت إضافة قسم "${trimmed}" بنجاح`);
+  };
+
+  const handleDeleteCategory = (catToDelete: string) => {
+    if (categories.length <= 1) {
+      showToast('يجب الإبقاء على قسم واحد على الأقل في المتجر');
+      return;
+    }
+    setCategories((prev) => prev.filter((c) => c !== catToDelete));
+    if (selectedCategory === catToDelete) {
+      setSelectedCategory('الكل');
+    }
+    showToast(`تم حذف قسم "${catToDelete}"`);
+  };
+
   const handleAddReview = (newReview: Omit<Review, 'id' | 'createdAt'>) => {
     const rev: Review = {
       ...newReview,
@@ -243,7 +323,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-stone-900 flex flex-col justify-between selection:bg-emerald-900 selection:text-white">
       {/* Dynamic Announcement Bar */}
-      {announcementVisible && settings.announcement && (
+      {announcementVisible && settings.announcement && settings.showAnnouncement !== false && (
         <div className="bg-stone-900 text-stone-200 text-xs py-2 px-4 flex items-center justify-between border-b border-stone-800">
           <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-center flex-1">
             <span className="font-medium text-balance">{settings.announcement}</span>
@@ -261,6 +341,7 @@ export default function App() {
 
       {/* Navigation Header */}
       <Navbar
+        settings={settings}
         cartCount={totalCartCount}
         onOpenCart={() => setCartOpen(true)}
         wishlistCount={wishlist.length}
@@ -302,7 +383,7 @@ export default function App() {
             {/* Category Segmented Controls & Sort */}
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-1 p-1 bg-stone-200/70 rounded-xl overflow-x-auto">
-                {STORE_CATEGORIES.map((cat) => (
+                {['الكل', ...categories].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
@@ -460,15 +541,20 @@ export default function App() {
         onClose={() => setAdminModalOpen(false)}
         products={products}
         onAddProduct={handleAddProduct}
+        onUpdateProduct={handleUpdateProduct}
         onToggleProduct={handleToggleProduct}
         onDeleteProduct={handleDeleteProduct}
+        categories={categories}
+        onAddCategory={handleAddCategory}
+        onDeleteCategory={handleDeleteCategory}
         settings={settings}
         onUpdateSettings={(newSettings) => {
           setSettings(newSettings);
-          showToast('تم حفظ الإعدادات بنجاح');
+          showToast('تم حفظ التعديلات وإعدادات المتجر بنجاح');
         }}
         onOpenSecurity={() => {
           setAdminModalOpen(false);
+          setSecurityInitialTab('issues');
           setSecurityModalOpen(true);
         }}
       />

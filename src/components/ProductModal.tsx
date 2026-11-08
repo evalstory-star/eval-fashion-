@@ -96,14 +96,19 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 {product.name}
               </h2>
 
-              <div className="flex items-baseline gap-3">
+              <div className="flex items-center gap-3">
                 <span className="text-2xl font-black text-stone-900 tabular-nums">
                   {product.price.toLocaleString('ar-EG')} <span className="text-sm font-bold text-stone-600">ج.م</span>
                 </span>
-                {product.oldPrice && (
-                  <span className="text-sm text-stone-400 line-through tabular-nums">
-                    {product.oldPrice.toLocaleString('ar-EG')} ج.م
-                  </span>
+                {product.oldPrice && product.oldPrice > product.price && (
+                  <>
+                    <span className="text-sm text-rose-600/75 line-through tabular-nums font-semibold">
+                      {product.oldPrice.toLocaleString('ar-EG')} ج.م
+                    </span>
+                    <span className="bg-rose-100 text-rose-700 text-xs font-black px-2 py-0.5 rounded-md">
+                      خصم {Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}%
+                    </span>
+                  </>
                 )}
               </div>
 

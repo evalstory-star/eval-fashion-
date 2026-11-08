@@ -17,6 +17,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   isWishlisted = false,
   onToggleWishlist,
 }) => {
+  const discountPercent =
+    product.oldPrice && product.oldPrice > product.price
+      ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
+      : 0;
+
   return (
     <div className="group bg-white rounded-2xl border border-stone-200/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 relative">
       {/* Product Image Container */}
@@ -31,6 +36,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           referrerPolicy="no-referrer"
           loading="lazy"
         />
+
+        {/* Discount Badge */}
+        {discountPercent > 0 && (
+          <span className="absolute top-3 right-3 bg-rose-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow-sm z-10">
+            خصم {discountPercent}%
+          </span>
+        )}
 
         {/* Wishlist Heart Button */}
         <button
@@ -99,8 +111,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <span className="text-base sm:text-lg font-black text-stone-900 tabular-nums">
               {product.price.toLocaleString('ar-EG')} <span className="text-xs font-bold text-stone-600">ج.م</span>
             </span>
-            {product.oldPrice && (
-              <span className="text-xs text-stone-400 line-through tabular-nums">
+            {product.oldPrice && product.oldPrice > product.price && (
+              <span className="text-xs text-rose-600/75 line-through tabular-nums font-semibold">
                 {product.oldPrice.toLocaleString('ar-EG')} ج.م
               </span>
             )}

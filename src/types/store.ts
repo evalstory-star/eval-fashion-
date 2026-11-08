@@ -36,16 +36,20 @@ export interface Review {
 
 export interface StoreSettings {
   announcement: string;
+  showAnnouncement?: boolean;
   heroBg: string;
   heroBadge: string;
   heroTitle: string;
   heroDesc: string;
+  logoText?: string;
+  logoSubtitle?: string;
+  logoUrl?: string;
   whatsapp: string;
   facebook: string;
   instagram: string;
   aboutText: string;
   contactText: string;
-  logoUrl?: string;
+  categories?: string[];
   payments: {
     cod: boolean;
     instapay: boolean;

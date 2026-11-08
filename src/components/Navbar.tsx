@@ -1,7 +1,10 @@
 import React from 'react';
 import { ShoppingBag, Sparkles, Lock, Menu, X, Heart } from 'lucide-react';
 
+import { StoreSettings } from '../types/store';
+
 interface NavbarProps {
+  settings: StoreSettings;
   cartCount: number;
   onOpenCart: () => void;
   wishlistCount: number;
@@ -14,6 +17,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
+  settings,
   cartCount,
   onOpenCart,
   wishlistCount,
@@ -36,18 +40,34 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-stone-200/80 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-8 h-20">
-          {/* Zone 1: Brand Wordmark */}
+          {/* Zone 1: Brand Wordmark / Logo */}
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => onNavigate('products')}
-              className="text-left group flex items-baseline gap-2 cursor-pointer focus:outline-none"
+              className="text-left group flex items-center gap-2.5 cursor-pointer focus:outline-none"
             >
-              <span className="text-2xl sm:text-3xl font-extrabold tracking-widest text-stone-900 font-serif">
-                EVAL
-              </span>
-              <span className="text-xs tracking-wider text-emerald-800 font-bold hidden sm:inline-block">
-                أناقة وأصالة
-              </span>
+              {settings.logoUrl ? (
+                <img
+                  src={settings.logoUrl}
+                  alt={settings.logoText || 'EVAL'}
+                  className="h-10 max-w-[140px] object-contain rounded-md"
+                  onError={(e) => {
+                    // Fallback to text if image URL fails
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                />
+              ) : null}
+
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-extrabold tracking-widest text-stone-900 font-serif">
+                  {settings.logoText || 'EVAL'}
+                </span>
+                {settings.logoSubtitle && (
+                  <span className="text-xs tracking-wider text-emerald-800 font-bold hidden sm:inline-block">
+                    {settings.logoSubtitle}
+                  </span>
+                )}
+              </div>
             </button>
           </div>
 
