@@ -19,6 +19,7 @@ import {
 } from './data/initialData';
 import { Product, CartItem, StoreSettings, Review } from './types/store';
 import { ShieldAlert, Sparkles, X, Check, ArrowUpDown } from 'lucide-react';
+import { fetchCloudReviews, syncReviewsToCloud } from './services/supabaseSync';
 
 export default function App() {
   // Store States with LocalStorage Persistence
@@ -49,7 +50,33 @@ export default function App() {
     }
   });
 
-  const [reviews, setReviews] = useState<Review[]>(INITIAL_REVIEWS);
+  const [reviews, setReviews] = useState<Review[]>(() => {
+    try {
+      const saved = localStorage.getItem('eval_store_reviews');
+      return saved ? JSON.parse(saved) : INITIAL_REVIEWS;
+    } catch {
+      return INITIAL_REVIEWS;
+    }
+  });
+
+  // Fetch latest reviews from cloud on mount
+  useEffect(() => {
+    fetchCloudReviews().then((cloudReviews) => {
+      if (cloudReviews && cloudReviews.length > 0) {
+        setReviews(cloudReviews);
+      }
+    });
+  }, []);
+
+  // Save reviews to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('eval_store_reviews', JSON.stringify(reviews));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [reviews]);
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<Product[]>(() => {
     try {
@@ -321,8 +348,21 @@ export default function App() {
       id: `rev-${Date.now()}`,
       createdAt: 'الآن',
     };
-    setReviews((prev) => [rev, ...prev]);
+    setReviews((prev) => {
+      const updated = [rev, ...prev];
+      syncReviewsToCloud(updated);
+      return updated;
+    });
     showToast('تم إضافة تقييمك بنجاح وشكراً لثقتكِ في إيفال');
+  };
+
+  const handleDeleteReview = (reviewId: string) => {
+    setReviews((prev) => {
+      const updated = prev.filter((r) => r.id !== reviewId);
+      syncReviewsToCloud(updated);
+      return updated;
+    });
+    showToast('تم حذف التعليق بنجاح');
   };
 
   const handleConsultStylistForProduct = (productName: string) => {
@@ -558,6 +598,8 @@ export default function App() {
         categories={categories}
         onAddCategory={handleAddCategory}
         onDeleteCategory={handleDeleteCategory}
+        reviews={reviews}
+        onDeleteReview={handleDeleteReview}
         settings={settings}
         onUpdateSettings={(newSettings) => {
           setSettings(newSettings);

@@ -1,10 +1,12 @@
-import { StaffAccount } from '../types/store';
+import { StaffAccount, Review } from '../types/store';
+import { INITIAL_REVIEWS } from '../data/initialData';
 
 export const SUPABASE_CONFIG = {
   url: 'https://nrrujezwgyuivzxqvjxh.supabase.co',
   anonKey:
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ycnVqZXp3Z3l1aXZ6eHF2anhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3OTExMDEsImV4cCI6MjEwOTM2NzEwMX0.h2YArv0ru7kWK5wU60fO-VjtHIuYUQLBk9SkRJ6gBRw',
   syncFileName: 'eval_staff_sync.json',
+  reviewsSyncFileName: 'eval_reviews_sync.json',
 };
 
 // Default fallback staff account available on any device
@@ -22,6 +24,7 @@ export const DEFAULT_STAFF_ACCOUNTS: StaffAccount[] = [
       canManageProducts: true,
       canManageCategories: true,
       canEditSettings: false,
+      canManageReviews: true,
     },
   },
 ];
@@ -92,6 +95,75 @@ export async function syncStaffAccountsToCloud(accounts: StaffAccount[]): Promis
     return response.ok;
   } catch (err) {
     console.warn('Failed to sync staff accounts to Supabase cloud:', err);
+    return false;
+  }
+}
+
+/**
+ * Fetch reviews from Supabase cloud
+ */
+export async function fetchCloudReviews(): Promise<Review[]> {
+  try {
+    const publicUrl = `${SUPABASE_CONFIG.url}/storage/v1/object/public/product-images/${SUPABASE_CONFIG.reviewsSyncFileName}?t=${Date.now()}`;
+    const response = await fetch(publicUrl, {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache',
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (Array.isArray(data) && data.length > 0) {
+        return data as Review[];
+      }
+    }
+  } catch (err) {
+    console.warn('Could not fetch reviews from Supabase cloud:', err);
+  }
+
+  // Fallback to local storage
+  try {
+    const saved = localStorage.getItem('eval_store_reviews');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return INITIAL_REVIEWS;
+}
+
+/**
+ * Save reviews to Supabase cloud
+ */
+export async function syncReviewsToCloud(reviewsList: Review[]): Promise<boolean> {
+  try {
+    localStorage.setItem('eval_store_reviews', JSON.stringify(reviewsList));
+  } catch (err) {
+    console.error('Failed to save reviews to localStorage:', err);
+  }
+
+  try {
+    const uploadUrl = `${SUPABASE_CONFIG.url}/storage/v1/object/product-images/${SUPABASE_CONFIG.reviewsSyncFileName}`;
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_CONFIG.anonKey,
+        Authorization: `Bearer ${SUPABASE_CONFIG.anonKey}`,
+        'Content-Type': 'application/json',
+        'x-upsert': 'true',
+      },
+      body: JSON.stringify(reviewsList),
+    });
+
+    return response.ok;
+  } catch (err) {
+    console.warn('Failed to sync reviews to Supabase cloud:', err);
     return false;
   }
 }

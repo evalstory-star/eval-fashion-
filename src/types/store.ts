@@ -74,6 +74,7 @@ export interface StaffPermissions {
   canManageProducts: boolean;
   canManageCategories: boolean;
   canEditSettings: boolean;
+  canManageReviews?: boolean;
 }
 
 export interface StaffAccount {

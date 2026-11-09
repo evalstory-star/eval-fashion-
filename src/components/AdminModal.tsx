@@ -29,9 +29,11 @@ import {
   UserPlus,
   UserCheck,
   UserX,
-  UserCog
+  UserCog,
+  Star,
+  MessageSquare
 } from 'lucide-react';
-import { Product, StoreSettings, StaffAccount, StaffPermissions } from '../types/store';
+import { Product, StoreSettings, StaffAccount, StaffPermissions, Review } from '../types/store';
 import { sha256 } from '../utils/security';
 import { processImageFile } from '../utils/imageUpload';
 import { SalesAnalytics } from './SalesAnalytics';
@@ -48,6 +50,8 @@ interface AdminModalProps {
   categories: string[];
   onAddCategory: (category: string) => void;
   onDeleteCategory: (category: string) => void;
+  reviews: Review[];
+  onDeleteReview: (id: string) => void;
   settings: StoreSettings;
   onUpdateSettings: (newSettings: StoreSettings) => void;
 }
@@ -72,6 +76,7 @@ const DEFAULT_STAFF: StaffAccount[] = [
       canManageProducts: true,
       canManageCategories: true,
       canEditSettings: false,
+      canManageReviews: true,
     },
     createdAt: '2026-11-08',
   },
@@ -88,6 +93,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   categories,
   onAddCategory,
   onDeleteCategory,
+  reviews,
+  onDeleteReview,
   settings,
   onUpdateSettings,
 }) => {
@@ -104,8 +111,12 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<
-    'analytics' | 'products' | 'categories' | 'branding' | 'staff' | 'security' | 'settings'
+    'analytics' | 'products' | 'categories' | 'reviews' | 'branding' | 'staff' | 'security' | 'settings'
   >('analytics');
+
+  // Reviews Tab Filter & Search
+  const [reviewSearchQuery, setReviewSearchQuery] = useState('');
+  const [reviewRatingFilter, setReviewRatingFilter] = useState<'all' | number>('all');
 
   // Staff Accounts State (Stored in localStorage)
   const [staffList, setStaffList] = useState<StaffAccount[]>(() => {
@@ -147,6 +158,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     canManageProducts: true,
     canManageCategories: false,
     canEditSettings: false,
+    canManageReviews: false,
   });
   const [staffCreateSuccess, setStaffCreateSuccess] = useState(false);
   const [staffCreateError, setStaffCreateError] = useState('');
@@ -277,6 +289,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
           canManageProducts: true,
           canManageCategories: true,
           canEditSettings: true,
+          canManageReviews: true,
         },
       });
       setIsAuthenticated(true);
@@ -738,6 +751,20 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                   >
                     <Layers className="w-3.5 h-3.5 text-indigo-500" />
                     <span>الأقسام ({categories.length})</span>
+                  </button>
+                )}
+
+                {(isSuperAdmin || perms.canManageReviews) && (
+                  <button
+                    onClick={() => setActiveTab('reviews')}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                      activeTab === 'reviews'
+                        ? 'bg-stone-900 text-white shadow-sm'
+                        : 'text-stone-600 hover:text-stone-900 bg-white/70'
+                    }`}
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 text-amber-500" />
+                    <span>الآراء والتعليقات ({reviews.length}) ⭐</span>
                   </button>
                 )}
 
@@ -1210,7 +1237,174 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                 </div>
               )}
 
-              {/* TAB 4: Hero Cover, Logo & Branding */}
+              {/* TAB 4: REVIEWS & COMMENTS MANAGEMENT (Manager & Authorized Staff) */}
+              {activeTab === 'reviews' && (isSuperAdmin || perms.canManageReviews) && (
+                <div className="space-y-6 animate-in fade-in duration-200">
+                  {/* Top Bar: Stats & Search */}
+                  <div className="p-4 sm:p-5 bg-stone-50 rounded-2xl border border-stone-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="w-5 h-5 text-amber-500" />
+                        <h4 className="text-sm sm:text-base font-bold text-stone-900">
+                          إدارة آراء وتقييمات العملاء
+                        </h4>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                          {reviews.length} تقييم
+                        </span>
+                      </div>
+                      <p className="text-xs text-stone-500">
+                        تحكم كامل للمدير: مراجعة كافة تعليقات المتجر، متابعة تجارب العميلات، وحذف أي تعليق بنقرة واحدة.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                      {/* Search Input */}
+                      <div className="relative flex-1 md:w-64">
+                        <Search className="w-3.5 h-3.5 text-stone-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          type="text"
+                          value={reviewSearchQuery}
+                          onChange={(e) => setReviewSearchQuery(e.target.value)}
+                          placeholder="بحث باسم العميل أو نص التعليق..."
+                          className="w-full pr-8 pl-3 py-2 text-xs bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-stone-400"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Rating Filters */}
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                    <span className="text-xs font-bold text-stone-600 shrink-0">تصفية التقييم:</span>
+                    <button
+                      onClick={() => setReviewRatingFilter('all')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                        reviewRatingFilter === 'all'
+                          ? 'bg-stone-900 text-white shadow-xs'
+                          : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                      }`}
+                    >
+                      جميع التقييمات ({reviews.length})
+                    </button>
+                    {[5, 4, 3, 2, 1].map((stars) => {
+                      const count = reviews.filter((r) => r.rating === stars).length;
+                      return (
+                        <button
+                          key={stars}
+                          onClick={() => setReviewRatingFilter(stars)}
+                          className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                            reviewRatingFilter === stars
+                              ? 'bg-amber-500 text-white shadow-xs'
+                              : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                          }`}
+                        >
+                          <span>{stars}</span>
+                          <Star className={`w-3 h-3 ${reviewRatingFilter === stars ? 'fill-white text-white' : 'fill-amber-400 text-amber-400'}`} />
+                          <span className="text-[10px] opacity-80">({count})</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Reviews Cards List */}
+                  {(() => {
+                    const filteredReviews = reviews.filter((rev) => {
+                      const matchesSearch =
+                        !reviewSearchQuery.trim() ||
+                        rev.name.toLowerCase().includes(reviewSearchQuery.toLowerCase()) ||
+                        rev.comment.toLowerCase().includes(reviewSearchQuery.toLowerCase());
+                      const matchesRating =
+                        reviewRatingFilter === 'all' || rev.rating === reviewRatingFilter;
+                      return matchesSearch && matchesRating;
+                    });
+
+                    if (filteredReviews.length === 0) {
+                      return (
+                        <div className="p-12 text-center bg-stone-50 rounded-2xl border border-dashed border-stone-300 space-y-2">
+                          <MessageSquare className="w-8 h-8 text-stone-400 mx-auto" />
+                          <p className="text-xs font-bold text-stone-700">لا توجد تعليقات مطابقة</p>
+                          <p className="text-[11px] text-stone-400">
+                            {reviewSearchQuery ? 'جربي البحث بكلمة أخرى أو تعديل التصفية' : 'لم يتم نشر أي تقييمات في هذا التصنيف بعد'}
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {filteredReviews.map((rev) => (
+                          <div
+                            key={rev.id}
+                            className="p-4 sm:p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs hover:border-stone-300 transition-all flex flex-col justify-between space-y-3"
+                          >
+                            <div className="space-y-2.5">
+                              {/* Header: User & Rating */}
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center shrink-0">
+                                    {rev.name.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-bold text-stone-900">{rev.name}</span>
+                                      {rev.verifiedPurchase && (
+                                        <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/50">
+                                          شراء مؤكد ✓
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-[10px] text-stone-400">{rev.createdAt}</span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-0.5 text-amber-500 shrink-0">
+                                  {Array.from({ length: 5 }).map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      className={`w-3.5 h-3.5 ${
+                                        i < rev.rating
+                                          ? 'fill-amber-400 text-amber-400'
+                                          : 'text-stone-200'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Comment Body */}
+                              <p className="text-xs text-stone-700 leading-relaxed bg-stone-50 p-3 rounded-xl border border-stone-100">
+                                "{rev.comment}"
+                              </p>
+                            </div>
+
+                            {/* Footer: Delete Action (Manager Control) */}
+                            <div className="pt-2 border-t border-stone-100 flex items-center justify-between">
+                              <span className="text-[10px] text-stone-400">معرف التعليق: {rev.id}</span>
+                              <button
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      `هل أنتِ متأكدة من حذف تعليق العميل "${rev.name}" نهائياً من المتجر؟`
+                                    )
+                                  ) {
+                                    onDeleteReview(rev.id);
+                                  }
+                                }}
+                                className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
+                                title="حذف التعليق"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                                <span>حذف التعليق</span>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* TAB 5: Hero Cover, Logo & Branding */}
               {activeTab === 'branding' && (isSuperAdmin || perms.canEditSettings) && (
                 <div className="space-y-6">
                   {/* Announcement Bar */}
@@ -1528,6 +1722,21 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                             <div>
                               <span className="font-bold text-stone-800 block">تعديل الغلاف والإعلانات وواتساب ⚙️</span>
                               <span className="text-[10px] text-stone-500">تعديل نصوص واجهة المتجر ورقم استقبال الطلبات</span>
+                            </div>
+                          </label>
+
+                          <label className="flex items-center gap-2.5 p-2 bg-white rounded-lg border border-stone-200 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={newStaffPerms.canManageReviews ?? false}
+                              onChange={(e) =>
+                                setNewStaffPerms({ ...newStaffPerms, canManageReviews: e.target.checked })
+                              }
+                              className="rounded text-emerald-800 focus:ring-0"
+                            />
+                            <div>
+                              <span className="font-bold text-stone-800 block">إدارة وحذف تقييمات العملاء ⭐</span>
+                              <span className="text-[10px] text-stone-500">صلاحية حذف التعليقات وإدارتها</span>
                             </div>
                           </label>
                         </div>
@@ -1902,6 +2111,24 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         <div>
                           <span className="font-bold text-xs text-stone-900 block">تعديل الغلاف والإعلانات وواتساب ⚙️</span>
                           <span className="text-[11px] text-stone-500">تعديل نصوص واجهة المتجر</span>
+                        </div>
+                      </label>
+
+                      <label className="flex items-center gap-2.5 p-2.5 bg-stone-50 rounded-xl border border-stone-200 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={editingStaff.permissions.canManageReviews ?? false}
+                          onChange={(e) =>
+                            setEditingStaff({
+                              ...editingStaff,
+                              permissions: { ...editingStaff.permissions, canManageReviews: e.target.checked },
+                            })
+                          }
+                          className="rounded text-emerald-800 focus:ring-0"
+                        />
+                        <div>
+                          <span className="font-bold text-xs text-stone-900 block">إدارة وحذف تقييمات العملاء ⭐</span>
+                          <span className="text-[11px] text-stone-500">صلاحية حذف التعليقات وإدارتها</span>
                         </div>
                       </label>
                     </div>
