@@ -9,7 +9,7 @@ export const INITIAL_SETTINGS: StoreSettings = {
   heroDesc: 'كل حكاية جميلة تبدأ بتفاصيل صغيرة... نجمع لكِ بين الأناقة، الاحتشام والراحة، حيث لكل تفصيلة معنى ولكل قطعة حكاية فريدة تليق بذوقك الرفيع.',
   logoText: 'EVAL',
   logoSubtitle: 'راحة تليق بك',
-  logoUrl: '/assets/brand/eval_app_icon_dark.png',
+  logoUrl: './assets/brand/eval_app_icon_dark.png',
   whatsapp: '201108396536',
   facebook: 'https://www.facebook.com/share/1GwJYnjzeE/',
   instagram: 'https://www.instagram.com/eval_store_fashion?psln=ejN5dTl4czhxdDE=',

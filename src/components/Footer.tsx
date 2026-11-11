@@ -15,7 +15,7 @@ export const Footer: React.FC<FooterProps> = ({ settings, onOpenStylist }) => {
           <div className="flex items-center gap-3.5 text-center md:text-right">
             <div className="w-12 h-12 rounded-xl overflow-hidden border border-[#C6A15B]/30 bg-[#34452D] shrink-0 p-1">
               <img
-                src="/assets/brand/eval_app_icon_dark.png"
+                src="./assets/brand/eval_app_icon_dark.png"
                 alt="EVAL"
                 className="w-full h-full object-contain"
               />
