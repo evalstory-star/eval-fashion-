@@ -44,15 +44,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={handleBrandClick}
-              className="text-left group flex items-center gap-2.5 cursor-pointer focus:outline-none select-none"
-              title="EVAL Fashion"
+              className="text-right group flex items-center gap-3 cursor-pointer focus:outline-none select-none"
+              title="EVAL Fashion | راحة تليق بك"
             >
               {settings.logoUrl ? (
-                <div className="w-10 h-10 rounded-xl overflow-hidden border border-stone-200 shadow-2xs bg-stone-100 shrink-0">
+                <div className="w-11 h-11 rounded-xl overflow-hidden border border-[#C6A15B]/40 shadow-xs bg-[#34452D] shrink-0 flex items-center justify-center p-0.5">
                   <img
                     src={settings.logoUrl}
                     alt={settings.logoText || 'EVAL'}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover rounded-lg"
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = 'none';
                     }}
@@ -60,15 +60,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
               ) : null}
 
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl sm:text-3xl font-extrabold tracking-widest text-stone-900 font-serif">
+              <div className="flex flex-col text-right">
+                <span className="text-2xl sm:text-3xl font-black tracking-[0.18em] text-[#34452D] font-serif uppercase">
                   {settings.logoText || 'EVAL'}
                 </span>
-                {settings.logoSubtitle && (
-                  <span className="text-xs tracking-wider text-emerald-800 font-bold hidden sm:inline-block">
-                    {settings.logoSubtitle}
-                  </span>
-                )}
+                <span className="text-[10px] tracking-wider text-[#C6A15B] font-bold">
+                  {settings.logoSubtitle || 'راحة تليق بك'}
+                </span>
               </div>
             </button>
           </div>

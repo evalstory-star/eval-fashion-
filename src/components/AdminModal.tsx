@@ -31,7 +31,8 @@ import {
   UserX,
   UserCog,
   Star,
-  MessageSquare
+  MessageSquare,
+  Copy
 } from 'lucide-react';
 import { Product, StoreSettings, StaffAccount, StaffPermissions, Review } from '../types/store';
 import { sha256 } from '../utils/security';
@@ -194,6 +195,17 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [isProcessingCoverImage, setIsProcessingCoverImage] = useState(false);
   const [isProcessingLogoImage, setIsProcessingLogoImage] = useState(false);
+  const [copiedHex, setCopiedHex] = useState<string | null>(null);
+
+  const handleCopyHex = (hex: string) => {
+    try {
+      navigator.clipboard?.writeText(hex);
+      setCopiedHex(hex);
+      setTimeout(() => setCopiedHex(null), 2000);
+    } catch {
+      // fallback
+    }
+  };
 
   // Change Password State for Admin
   const [newAdminEmail, setNewAdminEmail] = useState('');
@@ -778,7 +790,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     }`}
                   >
                     <Palette className="w-3.5 h-3.5 text-amber-500" />
-                    <span>الغلاف واللوغو</span>
+                    <span>الهوية والباكيج واللوغو 🎨</span>
                   </button>
                 )}
 
@@ -1407,6 +1419,354 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               {/* TAB 5: Hero Cover, Logo & Branding */}
               {activeTab === 'branding' && (isSuperAdmin || perms.canEditSettings) && (
                 <div className="space-y-6">
+                  {/* Brand Overview Header */}
+                  <div className="p-5 bg-linear-to-r from-[#24301F] to-[#34452D] rounded-2xl sm:rounded-3xl text-white border border-[#C6A15B]/30 shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-64 h-64 bg-radial from-[#C6A15B]/20 to-transparent rounded-full -translate-x-20 -translate-y-20 pointer-events-none" />
+                    <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                      <div className="space-y-1.5">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C6A15B]/20 border border-[#C6A15B]/40 text-[#E8DDC8] text-[11px] font-bold">
+                          <Sparkles className="w-3.5 h-3.5 text-[#C6A15B]" />
+                          <span>الهوية البصرية الرسمية المعتمدة لعلامة EVAL ✦</span>
+                        </div>
+                        <h3 className="text-lg sm:text-xl font-bold font-serif text-[#F5F0E5]">
+                          مركز الهوية، الشعار، ومواد الباكيج والتغليف الجاهزة للطباعة
+                        </h3>
+                        <p className="text-xs text-[#E8DDC8]/80 max-w-2xl leading-relaxed">
+                          تم اعتماد الهوية الرسمية: الألوان الملكية (الزيتي والذهبي والعاجي)، الخطوط التيبوغرافية، ونماذج التغليف الفاخرة للعبايات والأزياء. يمكنك تحميل الملفات للطباعة أو تفعيلها للمتجر بنقرة واحدة.
+                        </p>
+                      </div>
+
+                      <a
+                        href="/assets/brand/eval_brand_identity_full.png"
+                        download="EVAL_Brand_Identity_Full_Board.png"
+                        className="px-4 py-2.5 bg-[#C6A15B] hover:bg-[#d8b56f] text-[#1E281A] rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-all shrink-0 cursor-pointer"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>تحميل اللوحة الكاملة (HD)</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Master Identity Board Preview Card */}
+                  <div className="p-5 bg-white rounded-2xl border border-stone-200 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+                        <Palette className="w-4 h-4 text-[#34452D]" />
+                        <span>لوحة الهوية البصرية الشاملة المعتمدة (Master Brand Board)</span>
+                      </h4>
+                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#34452D]/10 text-[#34452D] border border-[#34452D]/20">
+                        معتمدة رسميًا ✓
+                      </span>
+                    </div>
+
+                    <div className="relative rounded-2xl overflow-hidden border border-stone-200 bg-stone-50 group">
+                      <img
+                        src="/assets/brand/eval_brand_identity_full.png"
+                        alt="لوحة الهوية البصرية المعتمدة لعلامة EVAL"
+                        className="w-full h-auto object-contain max-h-[460px] mx-auto transition-transform duration-300 group-hover:scale-[1.01]"
+                      />
+                      <div className="absolute inset-x-0 bottom-0 p-3 bg-linear-to-t from-stone-950/80 via-stone-950/40 to-transparent flex items-center justify-between text-white text-xs">
+                        <span className="font-serif">EVAL · FASHION FOR YOU · راحة تليق بك</span>
+                        <a
+                          href="/assets/brand/eval_brand_identity_full.png"
+                          download="EVAL_Brand_Identity_Master.png"
+                          className="px-3 py-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>تحميل بدقة الطباعة</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Official Brand Colors */}
+                  <div className="p-5 bg-white rounded-2xl border border-stone-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-[#C6A15B]" />
+                        <span>الألوان الرسمية المعتمدة للهوية (Brand Color Palette)</span>
+                      </h4>
+                      {copiedHex && (
+                        <span className="text-xs font-bold text-[#34452D] bg-[#34452D]/10 px-2.5 py-0.5 rounded-full animate-in fade-in">
+                          تم نسخ الرمز {copiedHex} بنجاح! ✓
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {[
+                        {
+                          name: 'Royal Olive',
+                          arabic: 'الزيتي الملكي',
+                          hex: '#34452D',
+                          bg: '#34452D',
+                          textDark: false,
+                          desc: 'اللون الأساسي للأكياس والعلب والواجهات',
+                        },
+                        {
+                          name: 'Soft Gold',
+                          arabic: 'الذهبي الهادئ',
+                          hex: '#C6A15B',
+                          bg: '#C6A15B',
+                          textDark: true,
+                          desc: 'لون الشعار والأختام والحفر الساخن',
+                        },
+                        {
+                          name: 'Warm Ivory',
+                          arabic: 'العاجي الدافئ',
+                          hex: '#F5F0E5',
+                          bg: '#F5F0E5',
+                          textDark: true,
+                          desc: 'لون الخلفيات والكروت والتاغات القطنية',
+                        },
+                        {
+                          name: 'Vanilla',
+                          arabic: 'الفانيليا',
+                          hex: '#E8DDC8',
+                          bg: '#E8DDC8',
+                          textDark: true,
+                          desc: 'لون البطانات الثانوية وورق السولفان',
+                        },
+                      ].map((col) => (
+                        <div
+                          key={col.hex}
+                          className="rounded-2xl border border-stone-200 overflow-hidden bg-white shadow-xs flex flex-col justify-between"
+                        >
+                          <div
+                            style={{ backgroundColor: col.bg }}
+                            className="h-20 w-full p-2.5 flex items-start justify-end"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => handleCopyHex(col.hex)}
+                              title="نسخ كود اللون"
+                              className={`p-1.5 rounded-lg text-xs font-mono font-bold cursor-pointer transition-transform active:scale-95 ${
+                                col.textDark
+                                  ? 'bg-black/10 hover:bg-black/20 text-stone-900'
+                                  : 'bg-white/20 hover:bg-white/30 text-white'
+                              }`}
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <div className="p-3 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-stone-900">{col.arabic}</span>
+                              <span className="text-[11px] font-mono font-bold text-stone-600">{col.hex}</span>
+                            </div>
+                            <span className="text-[10px] text-stone-500 font-serif block">{col.name}</span>
+                            <p className="text-[10px] text-stone-500 line-clamp-2 pt-0.5">{col.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Logo Selector & Presets */}
+                  <div className="p-5 bg-white rounded-2xl border border-stone-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+                          <Palette className="w-4 h-4 text-[#34452D]" />
+                          <span>نماذج الشعار المعتمدة واختيار لوغو المتجر</span>
+                        </h4>
+                        <p className="text-xs text-stone-500">
+                          اختر النموذج المفضل ليظهر في رأس وتذييل المتجر، أو حمّل أي نموذج بصيغة PNG عالية الدقة للطباعة.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                      {[
+                        {
+                          name: 'أيقونة التطبيق الملكية (المعتمدة حالياً)',
+                          specs: 'الرمز المونوغرام بالذهب على خلفية زيتي ملكي',
+                          url: '/assets/brand/eval_app_icon_dark.png',
+                          darkBg: true,
+                        },
+                        {
+                          name: 'الشعار الرئيسي المعتمد (Main Logo)',
+                          specs: 'الشعار الكامل مع الاسم العربي والفرنسي والسلوغان',
+                          url: '/assets/brand/eval_logo_main.png',
+                          darkBg: false,
+                        },
+                        {
+                          name: 'الشعار الأفقي (Horizontal Logo)',
+                          specs: 'تنسيق عرضي مع خط فاصل للفواتير والمطبوعات العريضة',
+                          url: '/assets/brand/eval_logo_horizontal.png',
+                          darkBg: false,
+                        },
+                        {
+                          name: 'النسخة الذهبية على الزيتي (Gold on Olive)',
+                          specs: 'الذهب اللامع على خلفية الزيتي الملكي للعلب الفاخرة',
+                          url: '/assets/brand/eval_logo_gold_dark.png',
+                          darkBg: true,
+                        },
+                        {
+                          name: 'المونوغرام الذهبي المختصر (Monogram Dark)',
+                          specs: 'حرف E مع أوراق الغار الذهبية للتطريز والختم',
+                          url: '/assets/brand/eval_monogram_dark.png',
+                          darkBg: true,
+                        },
+                        {
+                          name: 'النسخة الأحادية (Monochrome Version)',
+                          specs: 'للطباعة أحادية اللون والمستندات والفاكسات',
+                          url: '/assets/brand/eval_logo_monochrome.png',
+                          darkBg: false,
+                        },
+                      ].map((item) => {
+                        const isCurrent = tempSettings.logoUrl === item.url;
+                        return (
+                          <div
+                            key={item.url}
+                            className={`rounded-2xl border p-3 flex flex-col justify-between transition-all ${
+                              isCurrent
+                                ? 'border-[#34452D] bg-[#34452D]/5 ring-2 ring-[#34452D]/30 shadow-xs'
+                                : 'border-stone-200 bg-stone-50/50 hover:border-stone-300'
+                            }`}
+                          >
+                            <div
+                              className={`h-28 rounded-xl flex items-center justify-center p-3 mb-2.5 overflow-hidden border ${
+                                item.darkBg
+                                  ? 'bg-[#34452D] border-[#C6A15B]/30'
+                                  : 'bg-[#F5F0E5] border-stone-200'
+                              }`}
+                            >
+                              <img src={item.url} alt={item.name} className="max-h-full max-w-full object-contain" />
+                            </div>
+
+                            <div className="space-y-1 mb-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-stone-900">{item.name}</span>
+                                {isCurrent && (
+                                  <span className="text-[10px] font-bold text-[#34452D] bg-[#34452D]/15 px-2 py-0.5 rounded-full">
+                                    المحدد حالياً ✓
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[10px] text-stone-500 leading-tight">{item.specs}</p>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-1 border-t border-stone-200/60">
+                              <button
+                                type="button"
+                                onClick={() => setTempSettings({ ...tempSettings, logoUrl: item.url })}
+                                className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-colors cursor-pointer text-center ${
+                                  isCurrent
+                                    ? 'bg-[#34452D] text-white'
+                                    : 'bg-white border border-stone-200 text-stone-700 hover:bg-stone-100'
+                                }`}
+                              >
+                                {isCurrent ? 'اللوغو النشط للمتجر' : 'تعيين كلوغو للمتجر'}
+                              </button>
+
+                              <a
+                                href={item.url}
+                                download={`${item.name.replace(/\s+/g, '_')}.png`}
+                                title="تحميل ملف الصورة"
+                                className="p-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 text-stone-700 transition-colors cursor-pointer"
+                              >
+                                <Download className="w-4 h-4" />
+                              </a>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Print-Ready Luxury Packaging & Factory Production Assets */}
+                  <div className="p-5 bg-white rounded-2xl border border-stone-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+                          <Download className="w-4 h-4 text-[#C6A15B]" />
+                          <span>ملفات الباكيج والتغليف الفاخر الجاهزة للطباعة والإنتاج 🛍️📦</span>
+                        </h4>
+                        <p className="text-xs text-stone-500">
+                          نماذج التغليف الملكية لعلامة EVAL جاهزة للتحميل بجودة عالية لتقديمها مباشرة للمطابع ومصانع الكراتين والأكياس.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {[
+                        {
+                          id: 'bag',
+                          title: 'كيس التسوق الورقي الفاخر (Shopping Bag)',
+                          badge: 'كيس المعرض والمبيعات',
+                          specs: 'كرتون مقوى 250gsm بلون الزيتي الملكي (#34452D) · حفر رقائق الذهب الساخن (Gold Foil) · حبال حريرية ذهبية',
+                          url: '/assets/brand/eval_packaging_bag.png',
+                          filename: 'EVAL_Luxury_Shopping_Bag.png',
+                        },
+                        {
+                          id: 'box',
+                          title: 'العلبة الصلبة الملكية (Rigid Luxury Box)',
+                          badge: 'صندوق الهدايا والعبايات',
+                          specs: 'علبة هدايا صلبة مكسوة بالزيتي الملكي مع حواف وإطار ذهبي بارز وشعار EVAL المذهب مع شريط إغلاق مغناطيسي',
+                          url: '/assets/brand/eval_packaging_box.png',
+                          filename: 'EVAL_Luxury_Rigid_Box.png',
+                        },
+                        {
+                          id: 'hangtag',
+                          title: 'كارت التعليق الفاخر الدائري (Hang Tag)',
+                          badge: 'بطاقة القطع والأسعار',
+                          specs: 'ورق قطني سميك 600gsm عاجي (#F5F0E5) بختم مونوغرام EVAL الذهبي البارز مع حبل حريري أنيق لتعليقه بالقطعة',
+                          url: '/assets/brand/eval_packaging_hangtag.png',
+                          filename: 'EVAL_Circular_Hangtag.png',
+                        },
+                        {
+                          id: 'woventag',
+                          title: 'التاغ القماشي المنسوج للعبايات (Woven Tag)',
+                          badge: 'تاغ الخياطة الداخلية',
+                          specs: 'شريط قماشي فاخر منسوج من الحرير الأسود بخيوط ذهبية ناعمة مخصص لخياطته في ياقة العبايات والفساتين الراقية',
+                          url: '/assets/brand/eval_packaging_woven_tag.png',
+                          filename: 'EVAL_Woven_Fabric_Tag.png',
+                        },
+                        {
+                          id: 'tissue',
+                          title: 'ورق التغليف الحريري والختم الذهبي (Tissue Paper)',
+                          badge: 'التغليف الداخلي الفاخر',
+                          specs: 'ورق حريري خفيف بنقشة مونوغرام EVAL المكررة مع ختم ملصق شمعي ذهبي منقوش لإغلاق كل طلب بعناية فائقة',
+                          url: '/assets/brand/eval_packaging_tissue.png',
+                          filename: 'EVAL_Tissue_Paper_Gold_Seal.png',
+                        },
+                      ].map((pkg) => (
+                        <div
+                          key={pkg.id}
+                          className="rounded-2xl border border-stone-200 overflow-hidden bg-stone-50/40 flex flex-col justify-between hover:shadow-sm transition-all"
+                        >
+                          <div className="relative aspect-4/3 w-full bg-stone-100 overflow-hidden group">
+                            <img
+                              src={pkg.url}
+                              alt={pkg.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <span className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#34452D] text-white shadow-xs">
+                              {pkg.badge}
+                            </span>
+                          </div>
+
+                          <div className="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
+                            <div className="space-y-1">
+                              <h5 className="text-xs font-bold text-stone-900">{pkg.title}</h5>
+                              <p className="text-[11px] text-stone-500 leading-relaxed">{pkg.specs}</p>
+                            </div>
+
+                            <a
+                              href={pkg.url}
+                              download={pkg.filename}
+                              className="w-full mt-3 py-2 px-3 bg-[#34452D] hover:bg-[#253220] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                              <span>تحميل للطباعة بجودة عالية ⬇️</span>
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Announcement Bar */}
                   <div className="p-5 bg-stone-50 rounded-2xl border border-stone-200 space-y-4">
                     <div className="flex items-center justify-between">
@@ -1438,11 +1798,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Logo Customization */}
+                  {/* Logo Customization Text */}
                   <div className="p-5 bg-stone-50 rounded-2xl border border-stone-200 space-y-4">
                     <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
                       <Palette className="w-4 h-4 text-amber-600" />
-                      <span>تخصيص اللوغو واسم المتجر</span>
+                      <span>النصوص والشعار المكتوب</span>
                     </h4>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1458,12 +1818,12 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-stone-700 mb-1">الشعار الفرعي (Slogan)</label>
+                        <label className="block text-xs font-bold text-stone-700 mb-1">الشعار الفرعي (Slogan المعتمد)</label>
                         <input
                           type="text"
                           value={tempSettings.logoSubtitle || ''}
                           onChange={(e) => setTempSettings({ ...tempSettings, logoSubtitle: e.target.value })}
-                          placeholder="أناقة وأصالة"
+                          placeholder="راحة تليق بك"
                           className="w-full px-3.5 py-2 text-xs bg-white border border-stone-200 rounded-xl"
                         />
                       </div>
@@ -1517,7 +1877,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                             type="button"
                             onClick={() => coverFileInputRef.current?.click()}
                             disabled={isProcessingCoverImage}
-                            className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+                            className="px-4 py-2 bg-[#34452D] hover:bg-[#253220] text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
                           >
                             <Camera className="w-4 h-4" />
                             <span>رفع غلاف من الهاتف</span>
@@ -1537,7 +1897,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                             onClick={() => setTempSettings({ ...tempSettings, heroBg: preset.url })}
                             className={`p-2 rounded-xl border text-right transition-all cursor-pointer ${
                               tempSettings.heroBg === preset.url
-                                ? 'border-emerald-700 bg-emerald-50/50 shadow-xs ring-1 ring-emerald-700'
+                                ? 'border-[#34452D] bg-[#34452D]/10 shadow-xs ring-1 ring-[#34452D]'
                                 : 'border-stone-200 bg-white hover:border-stone-300'
                             }`}
                           >
@@ -1555,16 +1915,16 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                   <div className="flex items-center justify-between pt-2">
                     <button
                       onClick={handleSaveSettings}
-                      className="px-6 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer flex items-center gap-2"
+                      className="px-6 py-2.5 bg-[#34452D] hover:bg-[#253220] text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer flex items-center gap-2"
                     >
                       <Check className="w-4 h-4" />
                       <span>حفظ التعديلات</span>
                     </button>
 
                     {settingsSaved && (
-                      <span className="text-xs font-bold text-emerald-700 flex items-center gap-1.5 animate-in fade-in">
+                      <span className="text-xs font-bold text-[#34452D] flex items-center gap-1.5 animate-in fade-in">
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>تم حفظ التعديلات بنجاح!</span>
+                        <span>تم حفظ التعديلات وتطبيق الهوية بنجاح!</span>
                       </span>
                     )}
                   </div>
