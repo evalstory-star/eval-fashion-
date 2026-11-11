@@ -40,15 +40,15 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-stone-200/80 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-8 h-20">
-          {/* Zone 1: Brand Wordmark / Logo */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* Zone 1: Brand Wordmark / Logo - Emblem on the far right, name shifted towards center */}
+          <div className="flex items-center shrink-0">
             <button
               onClick={handleBrandClick}
-              className="text-right group flex items-center gap-3 cursor-pointer focus:outline-none select-none"
+              className="text-right group flex items-center cursor-pointer focus:outline-none select-none"
               title="EVAL Fashion | راحة تليق بك"
             >
               {settings.logoUrl ? (
-                <div className="w-11 h-11 rounded-xl overflow-hidden border border-[#C6A15B]/40 shadow-xs bg-[#34452D] shrink-0 flex items-center justify-center p-0.5">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden border border-[#C6A15B]/40 shadow-xs bg-[#34452D] shrink-0 flex items-center justify-center p-0.5 transition-transform duration-200 group-hover:scale-105">
                   <img
                     src={settings.logoUrl}
                     alt={settings.logoText || 'EVAL'}
@@ -60,13 +60,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
               ) : null}
 
-              <div className="flex flex-col text-right">
-                <span className="text-2xl sm:text-3xl font-black tracking-[0.18em] text-[#34452D] font-serif uppercase">
-                  {settings.logoText || 'EVAL'}
-                </span>
-                <span className="text-[10px] tracking-wider text-[#C6A15B] font-bold">
-                  {settings.logoSubtitle || 'راحة تليق بك'}
-                </span>
+              {/* Name gracefully shifted towards center with margin and subtle divider */}
+              <div className="flex items-center mr-3 sm:mr-5 md:mr-8">
+                <div className="w-px h-7 bg-stone-300/70 mx-2 hidden sm:block" />
+                <div className="flex flex-col text-right">
+                  <span className="text-2xl sm:text-3xl font-black tracking-[0.2em] text-[#34452D] font-serif uppercase leading-none">
+                    {settings.logoText || 'EVAL'}
+                  </span>
+                  <span className="text-[10px] tracking-widest text-[#C6A15B] font-bold mt-1">
+                    {settings.logoSubtitle || 'راحة تليق بك'}
+                  </span>
+                </div>
               </div>
             </button>
           </div>

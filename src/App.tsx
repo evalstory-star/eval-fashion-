@@ -18,7 +18,7 @@ import {
   STORE_CATEGORIES,
 } from './data/initialData';
 import { Product, CartItem, StoreSettings, Review } from './types/store';
-import { ShieldAlert, Sparkles, X, Check, ArrowUpDown } from 'lucide-react';
+import { ShieldAlert, Sparkles, X, Check, ArrowUpDown, ShoppingBag } from 'lucide-react';
 import { fetchCloudReviews, syncReviewsToCloud } from './services/supabaseSync';
 
 export default function App() {
@@ -35,9 +35,13 @@ export default function App() {
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem('eval_store_products');
-      return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
+      if (saved) {
+        const parsed: Product[] = JSON.parse(saved);
+        return parsed.filter((p) => !p.id.startsWith('prod-'));
+      }
+      return [];
     } catch {
-      return INITIAL_PRODUCTS;
+      return [];
     }
   });
 
@@ -53,9 +57,13 @@ export default function App() {
   const [reviews, setReviews] = useState<Review[]>(() => {
     try {
       const saved = localStorage.getItem('eval_store_reviews');
-      return saved ? JSON.parse(saved) : INITIAL_REVIEWS;
+      if (saved) {
+        const parsed: Review[] = JSON.parse(saved);
+        return parsed.filter((r) => !r.id.startsWith('rev-'));
+      }
+      return [];
     } catch {
-      return INITIAL_REVIEWS;
+      return [];
     }
   });
 
@@ -63,7 +71,8 @@ export default function App() {
   useEffect(() => {
     fetchCloudReviews().then((cloudReviews) => {
       if (cloudReviews && cloudReviews.length > 0) {
-        setReviews(cloudReviews);
+        const cleanCloud = cloudReviews.filter((r) => !r.id.startsWith('rev-'));
+        setReviews(cleanCloud);
       }
     });
   }, []);
@@ -468,14 +477,25 @@ export default function App() {
 
           {/* Products Grid */}
           {filteredProducts.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-3xl border border-stone-200/80 p-8 space-y-3">
-              <p className="text-sm font-bold text-stone-700">لا توجد منتجات في هذا القسم حالياً.</p>
-              <button
-                onClick={() => setSelectedCategory('الكل')}
-                className="text-xs font-bold text-emerald-800 underline cursor-pointer"
-              >
-                عرض جميع المنتجات
-              </button>
+            <div className="text-center py-20 px-6 bg-white rounded-3xl border border-stone-200/80 shadow-xs space-y-4 max-w-lg mx-auto my-6">
+              <div className="w-16 h-16 rounded-2xl bg-[#34452D]/10 text-[#34452D] flex items-center justify-center mx-auto border border-[#34452D]/20">
+                <ShoppingBag className="w-8 h-8 text-[#34452D]" />
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-lg font-bold font-serif text-stone-900">تشكيلة جديدة قيد الإضافة ✨</h3>
+                <p className="text-xs sm:text-sm text-stone-500 max-w-md mx-auto leading-relaxed">
+                  يتم حالياً تجهيز وإضافة أحدث تصاميم العبايات والأزياء الملكية الحصرية لعلامة EVAL.
+                </p>
+              </div>
+              {selectedCategory !== 'الكل' && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory('الكل')}
+                  className="text-xs font-bold text-[#34452D] bg-[#34452D]/10 px-4 py-2 rounded-xl hover:bg-[#34452D]/15 transition-colors cursor-pointer"
+                >
+                  عرض جميع الأقسام
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">

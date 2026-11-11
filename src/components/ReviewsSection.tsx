@@ -135,40 +135,61 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ reviews, onAddRe
           </form>
         )}
 
-        {/* Reviews Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          {reviews.map((rev) => (
-            <div
-              key={rev.id}
-              className="p-5 sm:p-6 bg-stone-50/70 rounded-2xl border border-stone-200/60 shadow-xs flex flex-col justify-between space-y-4"
+        {/* Reviews Grid or Empty State */}
+        {reviews.length === 0 ? (
+          <div className="text-center py-12 px-6 bg-stone-50/60 rounded-3xl border border-dashed border-stone-200/80 space-y-3 max-w-md mx-auto">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-200/60">
+              <Star className="w-6 h-6 fill-amber-400 text-amber-500" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-stone-900">كن أول من يشاركنا رأيه ✨</h4>
+              <p className="text-xs text-stone-500 leading-relaxed">
+                رأيكِ يسهم في استمرار تقديم أرقى معايير الأناقة والجودة في تفاصيل إيفال.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowForm(true)}
+              className="px-4 py-2 bg-[#34452D] hover:bg-[#253220] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
             >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-amber-500">
-                    {Array.from({ length: rev.rating }).map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-500" />
-                    ))}
+              كتابة تقييم جديد
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            {reviews.map((rev) => (
+              <div
+                key={rev.id}
+                className="p-5 sm:p-6 bg-stone-50/70 rounded-2xl border border-stone-200/60 shadow-xs flex flex-col justify-between space-y-4"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1 text-amber-500">
+                      {Array.from({ length: rev.rating }).map((_, i) => (
+                        <Star key={i} className="w-4 h-4 fill-amber-500" />
+                      ))}
+                    </div>
+
+                    <span className="text-[11px] text-stone-400 tabular-nums">{rev.createdAt}</span>
                   </div>
 
-                  <span className="text-[11px] text-stone-400 tabular-nums">{rev.createdAt}</span>
+                  <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-normal">
+                    "{rev.comment}"
+                  </p>
                 </div>
 
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-normal">
-                  "{rev.comment}"
-                </p>
+                <div className="pt-2 border-t border-stone-200/50 flex items-center justify-between">
+                  <span className="text-xs font-bold text-stone-900">{rev.name}</span>
+                  {rev.verifiedPurchase && (
+                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/50">
+                      شراء مؤكد ✓
+                    </span>
+                  )}
+                </div>
               </div>
-
-              <div className="pt-2 border-t border-stone-200/50 flex items-center justify-between">
-                <span className="text-xs font-bold text-stone-900">{rev.name}</span>
-                {rev.verifiedPurchase && (
-                  <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/50">
-                    شراء مؤكد ✓
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

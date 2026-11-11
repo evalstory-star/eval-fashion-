@@ -790,7 +790,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     }`}
                   >
                     <Palette className="w-3.5 h-3.5 text-amber-500" />
-                    <span>الهوية والباكيج واللوغو 🎨</span>
+                    <span>الهوية والشعار 🎨</span>
                   </button>
                 )}
 
@@ -1429,10 +1429,10 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                           <span>الهوية البصرية الرسمية المعتمدة لعلامة EVAL ✦</span>
                         </div>
                         <h3 className="text-lg sm:text-xl font-bold font-serif text-[#F5F0E5]">
-                          مركز الهوية، الشعار، ومواد الباكيج والتغليف الجاهزة للطباعة
+                          مركز الهوية، الشعار، والخطوط الرسمية
                         </h3>
                         <p className="text-xs text-[#E8DDC8]/80 max-w-2xl leading-relaxed">
-                          تم اعتماد الهوية الرسمية: الألوان الملكية (الزيتي والذهبي والعاجي)، الخطوط التيبوغرافية، ونماذج التغليف الفاخرة للعبايات والأزياء. يمكنك تحميل الملفات للطباعة أو تفعيلها للمتجر بنقرة واحدة.
+                          تم اعتماد الهوية الرسمية: الألوان الملكية (الزيتي والذهبي والعاجي)، الخطوط التيبوغرافية، ونماذج الشعار المعتمدة لعلامة EVAL.
                         </p>
                       </div>
 
@@ -1442,7 +1442,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         className="px-4 py-2.5 bg-[#C6A15B] hover:bg-[#d8b56f] text-[#1E281A] rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-all shrink-0 cursor-pointer"
                       >
                         <Download className="w-4 h-4" />
-                        <span>تحميل اللوحة الكاملة (HD)</span>
+                        <span>تحميل لوحة الهوية (HD)</span>
                       </a>
                     </div>
                   </div>
@@ -1672,98 +1672,6 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                           </div>
                         );
                       })}
-                    </div>
-                  </div>
-
-                  {/* Print-Ready Luxury Packaging & Factory Production Assets */}
-                  <div className="p-5 bg-white rounded-2xl border border-stone-200 shadow-xs space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-                          <Download className="w-4 h-4 text-[#C6A15B]" />
-                          <span>ملفات الباكيج والتغليف الفاخر الجاهزة للطباعة والإنتاج 🛍️📦</span>
-                        </h4>
-                        <p className="text-xs text-stone-500">
-                          نماذج التغليف الملكية لعلامة EVAL جاهزة للتحميل بجودة عالية لتقديمها مباشرة للمطابع ومصانع الكراتين والأكياس.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {[
-                        {
-                          id: 'bag',
-                          title: 'كيس التسوق الورقي الفاخر (Shopping Bag)',
-                          badge: 'كيس المعرض والمبيعات',
-                          specs: 'كرتون مقوى 250gsm بلون الزيتي الملكي (#34452D) · حفر رقائق الذهب الساخن (Gold Foil) · حبال حريرية ذهبية',
-                          url: '/assets/brand/eval_packaging_bag.png',
-                          filename: 'EVAL_Luxury_Shopping_Bag.png',
-                        },
-                        {
-                          id: 'box',
-                          title: 'العلبة الصلبة الملكية (Rigid Luxury Box)',
-                          badge: 'صندوق الهدايا والعبايات',
-                          specs: 'علبة هدايا صلبة مكسوة بالزيتي الملكي مع حواف وإطار ذهبي بارز وشعار EVAL المذهب مع شريط إغلاق مغناطيسي',
-                          url: '/assets/brand/eval_packaging_box.png',
-                          filename: 'EVAL_Luxury_Rigid_Box.png',
-                        },
-                        {
-                          id: 'hangtag',
-                          title: 'كارت التعليق الفاخر الدائري (Hang Tag)',
-                          badge: 'بطاقة القطع والأسعار',
-                          specs: 'ورق قطني سميك 600gsm عاجي (#F5F0E5) بختم مونوغرام EVAL الذهبي البارز مع حبل حريري أنيق لتعليقه بالقطعة',
-                          url: '/assets/brand/eval_packaging_hangtag.png',
-                          filename: 'EVAL_Circular_Hangtag.png',
-                        },
-                        {
-                          id: 'woventag',
-                          title: 'التاغ القماشي المنسوج للعبايات (Woven Tag)',
-                          badge: 'تاغ الخياطة الداخلية',
-                          specs: 'شريط قماشي فاخر منسوج من الحرير الأسود بخيوط ذهبية ناعمة مخصص لخياطته في ياقة العبايات والفساتين الراقية',
-                          url: '/assets/brand/eval_packaging_woven_tag.png',
-                          filename: 'EVAL_Woven_Fabric_Tag.png',
-                        },
-                        {
-                          id: 'tissue',
-                          title: 'ورق التغليف الحريري والختم الذهبي (Tissue Paper)',
-                          badge: 'التغليف الداخلي الفاخر',
-                          specs: 'ورق حريري خفيف بنقشة مونوغرام EVAL المكررة مع ختم ملصق شمعي ذهبي منقوش لإغلاق كل طلب بعناية فائقة',
-                          url: '/assets/brand/eval_packaging_tissue.png',
-                          filename: 'EVAL_Tissue_Paper_Gold_Seal.png',
-                        },
-                      ].map((pkg) => (
-                        <div
-                          key={pkg.id}
-                          className="rounded-2xl border border-stone-200 overflow-hidden bg-stone-50/40 flex flex-col justify-between hover:shadow-sm transition-all"
-                        >
-                          <div className="relative aspect-4/3 w-full bg-stone-100 overflow-hidden group">
-                            <img
-                              src={pkg.url}
-                              alt={pkg.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                            <span className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#34452D] text-white shadow-xs">
-                              {pkg.badge}
-                            </span>
-                          </div>
-
-                          <div className="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
-                            <div className="space-y-1">
-                              <h5 className="text-xs font-bold text-stone-900">{pkg.title}</h5>
-                              <p className="text-[11px] text-stone-500 leading-relaxed">{pkg.specs}</p>
-                            </div>
-
-                            <a
-                              href={pkg.url}
-                              download={pkg.filename}
-                              className="w-full mt-3 py-2 px-3 bg-[#34452D] hover:bg-[#253220] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
-                            >
-                              <Download className="w-3.5 h-3.5" />
-                              <span>تحميل للطباعة بجودة عالية ⬇️</span>
-                            </a>
-                          </div>
-                        </div>
-                      ))}
                     </div>
                   </div>
 
