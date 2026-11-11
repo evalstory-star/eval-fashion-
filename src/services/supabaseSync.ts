@@ -1,5 +1,8 @@
-import { StaffAccount, Review } from '../types/store';
+import { StaffAccount, Review, Product } from '../types/store';
 import { INITIAL_REVIEWS } from '../data/initialData';
+
+export const OLD_MOCK_PROD_IDS = new Set(['prod-1', 'prod-2', 'prod-3', 'prod-4', 'prod-5', 'prod-6']);
+export const OLD_MOCK_REV_IDS = new Set(['rev-1', 'rev-2', 'rev-3']);
 
 export const SUPABASE_CONFIG = {
   url: 'https://nrrujezwgyuivzxqvjxh.supabase.co',
@@ -7,6 +10,7 @@ export const SUPABASE_CONFIG = {
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ycnVqZXp3Z3l1aXZ6eHF2anhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3OTExMDEsImV4cCI6MjEwOTM2NzEwMX0.h2YArv0ru7kWK5wU60fO-VjtHIuYUQLBk9SkRJ6gBRw',
   syncFileName: 'eval_staff_sync.json',
   reviewsSyncFileName: 'eval_reviews_sync.json',
+  productsSyncFileName: 'eval_products_sync.json',
 };
 
 // Default fallback staff account available on any device
@@ -167,3 +171,74 @@ export async function syncReviewsToCloud(reviewsList: Review[]): Promise<boolean
     return false;
   }
 }
+
+/**
+ * Fetch products from Supabase cloud storage (real-time cross-device sync)
+ */
+export async function fetchCloudProducts(): Promise<Product[]> {
+  try {
+    const publicUrl = `${SUPABASE_CONFIG.url}/storage/v1/object/public/product-images/${SUPABASE_CONFIG.productsSyncFileName}?t=${Date.now()}`;
+    const response = await fetch(publicUrl, {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache',
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        return data.filter((p: Product) => !OLD_MOCK_PROD_IDS.has(p.id));
+      }
+    }
+  } catch (err) {
+    console.warn('Could not fetch products from Supabase cloud:', err);
+  }
+
+  // Fallback to local storage
+  try {
+    const saved = localStorage.getItem('eval_store_products');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((p: Product) => !OLD_MOCK_PROD_IDS.has(p.id));
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return [];
+}
+
+/**
+ * Save products to Supabase cloud storage so all customers and devices see added products instantly
+ */
+export async function syncProductsToCloud(productsList: Product[]): Promise<boolean> {
+  const cleanList = productsList.filter((p) => !OLD_MOCK_PROD_IDS.has(p.id));
+  try {
+    localStorage.setItem('eval_store_products', JSON.stringify(cleanList));
+  } catch (err) {
+    console.error('Failed to save products to localStorage:', err);
+  }
+
+  try {
+    const uploadUrl = `${SUPABASE_CONFIG.url}/storage/v1/object/product-images/${SUPABASE_CONFIG.productsSyncFileName}`;
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_CONFIG.anonKey,
+        Authorization: `Bearer ${SUPABASE_CONFIG.anonKey}`,
+        'Content-Type': 'application/json',
+        'x-upsert': 'true',
+      },
+      body: JSON.stringify(cleanList),
+    });
+
+    return response.ok;
+  } catch (err) {
+    console.warn('Failed to sync products to Supabase cloud:', err);
+    return false;
+  }
+}
+

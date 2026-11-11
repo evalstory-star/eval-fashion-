@@ -167,6 +167,25 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   // Editing Staff Modal
   const [editingStaff, setEditingStaff] = useState<StaffAccount | null>(null);
 
+// Preset Constants for Product Customization
+const PRESET_CLOTHING_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Free Size'];
+const PRESET_ABAYA_SIZES = ['50', '52', '54', '56', '58', '60'];
+const PRESET_COLORS = [
+  'أسود',
+  'أبيض',
+  'بيج',
+  'كحلي',
+  'زيتي',
+  'كشمير',
+  'رمادي',
+  'نبيتي',
+  'عاجي',
+  'موكا',
+  'بني',
+  'سماوي',
+  'زيتوني',
+];
+
   // New Product Form State
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -175,9 +194,22 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const [newOldPrice, setNewOldPrice] = useState('');
   const [newFabric, setNewFabric] = useState('');
   const [newDesc, setNewDesc] = useState('');
-  const [newImageUrl, setNewImageUrl] = useState('/src/assets/images/product_abaya_noir_1794089555159.jpg');
+  const [newImages, setNewImages] = useState<string[]>([
+    '/src/assets/images/product_abaya_noir_1794089555159.jpg',
+  ]);
+  const [newImageUrlInput, setNewImageUrlInput] = useState('');
+  const [newSizes, setNewSizes] = useState<string[]>(['S', 'M', 'L', 'XL']);
+  const [customSizeInput, setCustomSizeInput] = useState('');
+  const [newColors, setNewColors] = useState<string[]>(['أسود', 'بيج']);
+  const [customColorInput, setCustomColorInput] = useState('');
   const [isProcessingNewImage, setIsProcessingNewImage] = useState(false);
   const [generatingAi, setGeneratingAi] = useState(false);
+  const [productActionStatus, setProductActionStatus] = useState<string | null>(null);
+
+  // Edit Product Custom inputs
+  const [editCustomSizeInput, setEditCustomSizeInput] = useState('');
+  const [editCustomColorInput, setEditCustomColorInput] = useState('');
+  const [editImageUrlInput, setEditImageUrlInput] = useState('');
 
   // Search & Filter in Products List
   const [productSearch, setProductSearch] = useState('');
@@ -503,7 +535,36 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       const optimizedUrl = await processImageFile(file, maxWidth, maxHeight, quality);
       onSuccess(optimizedUrl);
     } catch (err: any) {
-      alert(err.message || 'حدث خطأ أثناء تحميل الصورة');
+      console.warn('Error processing image:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMultipleFilesChange = async (
+    files: FileList | null,
+    onSuccess: (dataUrls: string[]) => void,
+    setLoading: (loading: boolean) => void,
+    maxWidth = 1000,
+    maxHeight = 1000,
+    quality = 0.82
+  ) => {
+    if (!files || files.length === 0) return;
+    try {
+      setLoading(true);
+      const urls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        try {
+          const opt = await processImageFile(file, maxWidth, maxHeight, quality);
+          urls.push(opt);
+        } catch (e) {
+          console.warn('Error processing image file:', e);
+        }
+      }
+      if (urls.length > 0) {
+        onSuccess(urls);
+      }
     } finally {
       setLoading(false);
     }
@@ -511,7 +572,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
   const handleGenerateAiDescription = async () => {
     if (!newTitle.trim()) {
-      alert('يرجى كتابة اسم المنتج أولاً لتوليد الوصف المناسب له.');
+      setProductActionStatus('يرجى كتابة اسم المنتج أولاً لتوليد الوصف المناسب له.');
+      setTimeout(() => setProductActionStatus(null), 3000);
       return;
     }
 
@@ -543,6 +605,14 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     const parsedPrice = Number(newPrice);
     const parsedOldPrice = newOldPrice.trim() ? Number(newOldPrice) : undefined;
 
+    const finalSizes = newSizes.length > 0 ? newSizes : ['Free Size'];
+    const finalColors = newColors.length > 0 ? newColors : ['أسود'];
+    const finalImages =
+      newImages.length > 0
+        ? newImages
+        : ['/src/assets/images/product_abaya_noir_1794089555159.jpg'];
+    const primaryImage = finalImages[0];
+
     onAddProduct({
       name: newTitle.trim(),
       category: newCategory,
@@ -550,10 +620,10 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       oldPrice: parsedOldPrice && parsedOldPrice > parsedPrice ? parsedOldPrice : undefined,
       fabric: newFabric.trim() || 'خامة فاخرة مختارة بعناية',
       description: newDesc.trim() || 'قطعة حصرية تجمع بين الأصالة والأناقة من إيفال.',
-      sizes: ['52', '54', '56', '58', 'Free Size'],
-      colors: ['أسود', 'بيج', 'أبيض'],
-      imageUrl: newImageUrl,
-      images: [newImageUrl],
+      sizes: finalSizes,
+      colors: finalColors,
+      imageUrl: primaryImage,
+      images: finalImages,
       isAvailable: true,
       isFeatured: false,
     });
@@ -564,7 +634,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     setNewFabric('');
     setNewDesc('');
     setShowAddForm(false);
-    alert('تم إضافة المنتج بنجاح وتحديث المتجر!');
+    setProductActionStatus('تمت إضافة القطعة بنجاح وحفظها سحابياً في المتجر! ✨');
+    setTimeout(() => setProductActionStatus(null), 4000);
   };
 
   const handleSaveEditProduct = (e: React.FormEvent) => {
@@ -923,64 +994,127 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         </button>
                       </div>
 
-                      <form onSubmit={handleCreateProduct} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {/* 1. Mobile Photo Upload Box */}
-                        <div className="sm:col-span-3 bg-white p-4 rounded-xl border border-dashed border-stone-300">
-                          <div className="flex flex-col sm:flex-row items-center gap-4">
-                            <div className="w-24 h-24 rounded-xl overflow-hidden bg-stone-100 border border-stone-200 shrink-0 relative flex items-center justify-center">
-                              {newImageUrl ? (
-                                <img src={newImageUrl} alt="معاينة" className="w-full h-full object-cover" />
-                              ) : (
-                                <Camera className="w-8 h-8 text-stone-400" />
-                              )}
-                              {isProcessingNewImage && (
-                                <div className="absolute inset-0 bg-stone-900/60 flex items-center justify-center text-white text-[10px] font-bold">
-                                  جاري الضغط...
-                                </div>
-                              )}
-                            </div>
+                      {/* Action status notification banner */}
+                      {productActionStatus && (
+                        <div className="p-3 bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span>{productActionStatus}</span>
+                        </div>
+                      )}
 
-                            <div className="space-y-2 flex-1 text-center sm:text-right">
-                              <label className="block text-xs font-bold text-stone-900">
-                                صورة القطعة (رفع مباشر من كاميرا الموبايل أو المعرض) 📷
+                      <form onSubmit={handleCreateProduct} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {/* 1. Multi-Image Upload & Gallery */}
+                        <div className="sm:col-span-3 bg-white p-4 rounded-xl border border-dashed border-stone-300 space-y-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-2">
+                            <div>
+                              <label className="block text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                                <Camera className="w-4 h-4 text-emerald-800" />
+                                <span>صور القطعة (رفع أكثر من صورة من الهاتف أو الكاميرا) 📷</span>
                               </label>
                               <p className="text-[11px] text-stone-500">
-                                انقري لاختيار صورة من هاتفكِ، يتم تحسينها وضغطها تلقائياً لتفتح بسرعة فائقة.
+                                يمكنكِ اختيار عدة صور معاً من المعرض. الصورة الأولى ستكون الغلاف الرئيسي للقطعة.
                               </p>
+                            </div>
 
-                              <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
-                                <input
-                                  type="file"
-                                  ref={newProductFileInputRef}
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) =>
-                                    handleFileChange(
-                                      e.target.files?.[0],
-                                      (url) => setNewImageUrl(url),
-                                      setIsProcessingNewImage
-                                    )
-                                  }
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => newProductFileInputRef.current?.click()}
-                                  disabled={isProcessingNewImage}
-                                  className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="file"
+                                ref={newProductFileInputRef}
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={(e) =>
+                                  handleMultipleFilesChange(
+                                    e.target.files,
+                                    (urls) => setNewImages((prev) => [...prev, ...urls]),
+                                    setIsProcessingNewImage
+                                  )
+                                }
+                              />
+                              <button
+                                type="button"
+                                onClick={() => newProductFileInputRef.current?.click()}
+                                disabled={isProcessingNewImage}
+                                className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+                              >
+                                <Camera className="w-4 h-4" />
+                                <span>{isProcessingNewImage ? 'جاري المعالجة...' : 'رفع صور من الهاتف ➕'}</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Image Gallery Preview Grid */}
+                          <div className="space-y-2">
+                            <span className="text-[11px] font-bold text-stone-600 block">
+                              الصور المرفوعة للقطعة ({newImages.length}):
+                            </span>
+                            <div className="flex flex-wrap gap-2.5">
+                              {newImages.map((imgUrl, idx) => (
+                                <div
+                                  key={idx}
+                                  className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-stone-100 border-2 border-stone-200 group"
                                 >
-                                  <Camera className="w-4 h-4" />
-                                  <span>{newImageUrl ? 'تغيير صورة القطعة من الهاتف' : 'رفع صورة من الهاتف'}</span>
-                                </button>
-                              </div>
+                                  <img
+                                    src={imgUrl}
+                                    alt={`صورة ${idx + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
 
+                                  {/* Primary Badge */}
+                                  {idx === 0 ? (
+                                    <span className="absolute top-1 right-1 bg-emerald-800 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-xs z-10">
+                                      الرئيسية
+                                    </span>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const reordered = [imgUrl, ...newImages.filter((_, i) => i !== idx)];
+                                        setNewImages(reordered);
+                                      }}
+                                      className="absolute bottom-1 right-1 left-1 bg-stone-900/80 hover:bg-stone-900 text-white text-[9px] font-bold py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity text-center cursor-pointer"
+                                    >
+                                      اجعلها رئيسية
+                                    </button>
+                                  )}
+
+                                  {/* Delete Button */}
+                                  {newImages.length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setNewImages(newImages.filter((_, i) => i !== idx))}
+                                      className="absolute top-1 left-1 p-1 bg-rose-600 text-white rounded-full hover:bg-rose-700 transition-colors shadow-xs cursor-pointer"
+                                      title="حذف هذه الصورة"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Add URL fallback */}
+                            <div className="flex gap-2 pt-1">
                               <input
                                 type="text"
-                                value={newImageUrl}
-                                onChange={(e) => setNewImageUrl(e.target.value)}
-                                placeholder="رابط الصورة (URL)"
-                                className="w-full px-2.5 py-1.5 text-[11px] bg-stone-50 border border-stone-200 rounded-lg text-stone-600 focus:outline-none"
+                                value={newImageUrlInput}
+                                onChange={(e) => setNewImageUrlInput(e.target.value)}
+                                placeholder="أو الصقي رابط صورة خارجي (URL)..."
+                                className="flex-1 px-3 py-1.5 text-xs bg-stone-50 border border-stone-200 rounded-lg text-stone-700 focus:outline-none"
                                 dir="ltr"
                               />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (newImageUrlInput.trim()) {
+                                    setNewImages((prev) => [...prev, newImageUrlInput.trim()]);
+                                    setNewImageUrlInput('');
+                                  }
+                                }}
+                                className="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-bold rounded-lg cursor-pointer"
+                              >
+                                إضافة الرابط
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -1062,6 +1196,232 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                           />
                         </div>
 
+                        {/* 2. Color Selection (Chips + Custom Input) */}
+                        <div className="sm:col-span-3 bg-white p-3.5 rounded-xl border border-stone-200 space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <label className="block text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                              <Palette className="w-4 h-4 text-amber-600" />
+                              <span>اختيار ألوان القطعة المتاحة 🎨</span>
+                            </label>
+                            <span className="text-[11px] font-semibold text-stone-500">
+                              المحدد: {newColors.length} لون
+                            </span>
+                          </div>
+
+                          {/* Selected Colors Chips */}
+                          <div className="flex flex-wrap items-center gap-1.5 min-h-[32px] p-2 bg-stone-50 rounded-lg border border-stone-100">
+                            {newColors.length === 0 ? (
+                              <span className="text-xs text-stone-400">لم يتم اختيار أي لون بعد، يرجى النقر على الألوان أدناه</span>
+                            ) : (
+                              newColors.map((color) => (
+                                <span
+                                  key={color}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-stone-900 text-white rounded-lg text-xs font-bold shadow-2xs"
+                                >
+                                  <span>{color}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setNewColors(newColors.filter((c) => c !== color))}
+                                    className="p-0.5 hover:text-rose-300 cursor-pointer"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </span>
+                              ))
+                            )}
+                          </div>
+
+                          {/* Preset Color Buttons */}
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-stone-500 block">ألوان شائعة سريعة (اضغطي للإضافة/الحذف):</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {PRESET_COLORS.map((color) => {
+                                const isSelected = newColors.includes(color);
+                                return (
+                                  <button
+                                    key={color}
+                                    type="button"
+                                    onClick={() => {
+                                      if (isSelected) {
+                                        setNewColors(newColors.filter((c) => c !== color));
+                                      } else {
+                                        setNewColors([...newColors, color]);
+                                      }
+                                    }}
+                                    className={`px-2.5 py-1 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                                      isSelected
+                                        ? 'bg-[#34452D] text-white border-[#34452D]'
+                                        : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'
+                                    }`}
+                                  >
+                                    {isSelected ? `✓ ${color}` : `+ ${color}`}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* Custom Color Input */}
+                          <div className="flex gap-2 pt-1 max-w-sm">
+                            <input
+                              type="text"
+                              value={customColorInput}
+                              onChange={(e) => setCustomColorInput(e.target.value)}
+                              placeholder="أو اكتبي لون مخصص (مثال: بترولي)..."
+                              className="flex-1 px-3 py-1.5 text-xs bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  if (customColorInput.trim() && !newColors.includes(customColorInput.trim())) {
+                                    setNewColors([...newColors, customColorInput.trim()]);
+                                    setCustomColorInput('');
+                                  }
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (customColorInput.trim() && !newColors.includes(customColorInput.trim())) {
+                                  setNewColors([...newColors, customColorInput.trim()]);
+                                  setCustomColorInput('');
+                                }
+                              }}
+                              className="px-3 py-1.5 bg-stone-800 hover:bg-stone-900 text-white text-xs font-bold rounded-lg cursor-pointer"
+                            >
+                              إضافة اللون
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* 3. Size Selection (Clothing & Abayas + Custom Input) */}
+                        <div className="sm:col-span-3 bg-white p-3.5 rounded-xl border border-stone-200 space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <label className="block text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                              <Tag className="w-4 h-4 text-blue-600" />
+                              <span>اختيار مقاسات القطعة المتاحة (S, M, L, XL, XXL ...) 📏</span>
+                            </label>
+                            <span className="text-[11px] font-semibold text-stone-500">
+                              المحدد: {newSizes.length} مقاس
+                            </span>
+                          </div>
+
+                          {/* Selected Sizes Chips */}
+                          <div className="flex flex-wrap items-center gap-1.5 min-h-[32px] p-2 bg-stone-50 rounded-lg border border-stone-100">
+                            {newSizes.length === 0 ? (
+                              <span className="text-xs text-stone-400">لم يتم اختيار أي مقاس، انقري على المقاسات بالأسفل لتفعيلها</span>
+                            ) : (
+                              newSizes.map((size) => (
+                                <span
+                                  key={size}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#34452D] text-white rounded-lg text-xs font-bold shadow-2xs"
+                                >
+                                  <span>{size}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setNewSizes(newSizes.filter((s) => s !== size))}
+                                    className="p-0.5 hover:text-rose-300 cursor-pointer"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </span>
+                              ))
+                            )}
+                          </div>
+
+                          {/* Clothing Sizes Presets */}
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-stone-500 block">مقاسات الملابس القياسية:</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {PRESET_CLOTHING_SIZES.map((size) => {
+                                const isSelected = newSizes.includes(size);
+                                return (
+                                  <button
+                                    key={size}
+                                    type="button"
+                                    onClick={() => {
+                                      if (isSelected) {
+                                        setNewSizes(newSizes.filter((s) => s !== size));
+                                      } else {
+                                        setNewSizes([...newSizes, size]);
+                                      }
+                                    }}
+                                    className={`px-2.5 py-1 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                                      isSelected
+                                        ? 'bg-[#34452D] text-white border-[#34452D]'
+                                        : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'
+                                    }`}
+                                  >
+                                    {isSelected ? `✓ ${size}` : `+ ${size}`}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* Abaya Numeric Sizes Presets */}
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-stone-500 block">مقاسات العبايات الرقمية (طول العباية):</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {PRESET_ABAYA_SIZES.map((size) => {
+                                const isSelected = newSizes.includes(size);
+                                return (
+                                  <button
+                                    key={size}
+                                    type="button"
+                                    onClick={() => {
+                                      if (isSelected) {
+                                        setNewSizes(newSizes.filter((s) => s !== size));
+                                      } else {
+                                        setNewSizes([...newSizes, size]);
+                                      }
+                                    }}
+                                    className={`px-2.5 py-1 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                                      isSelected
+                                        ? 'bg-[#34452D] text-white border-[#34452D]'
+                                        : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'
+                                    }`}
+                                  >
+                                    {isSelected ? `✓ ${size}` : `+ ${size}`}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* Custom Size Input */}
+                          <div className="flex gap-2 pt-1 max-w-sm">
+                            <input
+                              type="text"
+                              value={customSizeInput}
+                              onChange={(e) => setCustomSizeInput(e.target.value)}
+                              placeholder="أو اكتبي مقاس مخصص (مثال: 4XL أو تفصيل)..."
+                              className="flex-1 px-3 py-1.5 text-xs bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  if (customSizeInput.trim() && !newSizes.includes(customSizeInput.trim())) {
+                                    setNewSizes([...newSizes, customSizeInput.trim()]);
+                                    setCustomSizeInput('');
+                                  }
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (customSizeInput.trim() && !newSizes.includes(customSizeInput.trim())) {
+                                  setNewSizes([...newSizes, customSizeInput.trim()]);
+                                  setCustomSizeInput('');
+                                }
+                              }}
+                              className="px-3 py-1.5 bg-stone-800 hover:bg-stone-900 text-white text-xs font-bold rounded-lg cursor-pointer"
+                            >
+                              إضافة المقاس
+                            </button>
+                          </div>
+                        </div>
+
                         {/* Description */}
                         <div className="sm:col-span-3">
                           <label className="block text-[11px] font-bold text-stone-700 mb-1">الوصف التسويقي</label>
@@ -1077,9 +1437,10 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         <div className="sm:col-span-3 pt-1 flex items-center gap-3">
                           <button
                             type="submit"
-                            className="px-6 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+                            className="px-6 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer flex items-center gap-2"
                           >
-                            نشر القطعة في المتجر فوراً
+                            <Check className="w-4 h-4 text-emerald-400" />
+                            <span>نشر القطعة في المتجر وحفظها سحابياً</span>
                           </button>
                           <button
                             type="button"
@@ -2439,38 +2800,39 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                   </div>
 
                   <form onSubmit={handleSaveEditProduct} className="space-y-4">
-                    {/* Mobile Image Upload for Edited Product */}
-                    <div className="bg-stone-50 p-3.5 rounded-xl border border-dashed border-stone-300">
-                      <div className="flex items-center gap-3">
-                        <div className="w-20 h-20 rounded-xl overflow-hidden bg-stone-200 border border-stone-200 shrink-0 relative flex items-center justify-center">
-                          <img
-                            src={editingProduct.imageUrl}
-                            alt={editingProduct.name}
-                            className="w-full h-full object-cover"
-                          />
-                          {isProcessingEditImage && (
-                            <div className="absolute inset-0 bg-stone-900/70 flex items-center justify-center text-white text-[10px] font-bold">
-                              جاري المعالجة...
-                            </div>
-                          )}
+                    {/* Multi-Image Gallery for Edited Product */}
+                    <div className="bg-stone-50 p-3.5 rounded-xl border border-dashed border-stone-300 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-200/70 pb-2">
+                        <div>
+                          <span className="text-xs font-bold text-stone-900 block flex items-center gap-1.5">
+                            <Camera className="w-4 h-4 text-emerald-800" />
+                            <span>صور القطعة ({editingProduct.images?.length || 1}) 📷</span>
+                          </span>
+                          <span className="text-[11px] text-stone-500">
+                            يمكنكِ رفع صور إضافية من الهاتف وحذف أو تبديل الصورة الرئيسية.
+                          </span>
                         </div>
 
-                        <div className="space-y-1.5 flex-1">
-                          <span className="text-xs font-bold text-stone-900 block">صورة القطعة 📷</span>
+                        <div className="flex items-center gap-2">
                           <input
                             type="file"
                             ref={editProductFileInputRef}
                             accept="image/*"
+                            multiple
                             className="hidden"
                             onChange={(e) =>
-                              handleFileChange(
-                                e.target.files?.[0],
-                                (url) =>
+                              handleMultipleFilesChange(
+                                e.target.files,
+                                (urls) => {
+                                  const currentImages = editingProduct.images && editingProduct.images.length > 0
+                                    ? editingProduct.images
+                                    : [editingProduct.imageUrl];
                                   setEditingProduct({
                                     ...editingProduct,
-                                    imageUrl: url,
-                                    images: [url],
-                                  }),
+                                    images: [...currentImages, ...urls],
+                                    imageUrl: currentImages[0] || urls[0],
+                                  });
+                                },
                                 setIsProcessingEditImage
                               )
                             }
@@ -2482,9 +2844,97 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                             className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
                           >
                             <Camera className="w-3.5 h-3.5" />
-                            <span>تغيير الصورة من الهاتف</span>
+                            <span>{isProcessingEditImage ? 'جاري المعالجة...' : 'إضافة صور من الهاتف ➕'}</span>
                           </button>
                         </div>
+                      </div>
+
+                      {/* Thumbnails list */}
+                      <div className="flex flex-wrap gap-2">
+                        {(editingProduct.images && editingProduct.images.length > 0
+                          ? editingProduct.images
+                          : [editingProduct.imageUrl]
+                        ).map((imgUrl, idx) => (
+                          <div
+                            key={idx}
+                            className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-stone-200 border-2 border-stone-200 group"
+                          >
+                            <img src={imgUrl} alt="" className="w-full h-full object-cover" />
+
+                            {idx === 0 ? (
+                              <span className="absolute top-1 right-1 bg-emerald-800 text-white text-[8px] font-black px-1 py-0.5 rounded shadow-xs z-10">
+                                الرئيسية
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const all = editingProduct.images && editingProduct.images.length > 0
+                                    ? editingProduct.images
+                                    : [editingProduct.imageUrl];
+                                  const reordered = [imgUrl, ...all.filter((_, i) => i !== idx)];
+                                  setEditingProduct({
+                                    ...editingProduct,
+                                    images: reordered,
+                                    imageUrl: imgUrl,
+                                  });
+                                }}
+                                className="absolute bottom-1 right-1 left-1 bg-stone-900/80 hover:bg-stone-900 text-white text-[8px] font-bold py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity text-center cursor-pointer"
+                              >
+                                اجعلها رئيسية
+                              </button>
+                            )}
+
+                            {(editingProduct.images?.length || 1) > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const all = editingProduct.images || [editingProduct.imageUrl];
+                                  const filtered = all.filter((_, i) => i !== idx);
+                                  setEditingProduct({
+                                    ...editingProduct,
+                                    images: filtered,
+                                    imageUrl: filtered[0] || '',
+                                  });
+                                }}
+                                className="absolute top-1 left-1 p-1 bg-rose-600 text-white rounded-full hover:bg-rose-700 transition-colors shadow-xs cursor-pointer"
+                                title="حذف هذه الصورة"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Add Image by URL */}
+                      <div className="flex gap-2 pt-1">
+                        <input
+                          type="text"
+                          value={editImageUrlInput}
+                          onChange={(e) => setEditImageUrlInput(e.target.value)}
+                          placeholder="أو الصقي رابط صورة خارجي..."
+                          className="flex-1 px-2.5 py-1 text-xs bg-white border border-stone-200 rounded-lg text-stone-700 focus:outline-none"
+                          dir="ltr"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (editImageUrlInput.trim()) {
+                              const cur = editingProduct.images && editingProduct.images.length > 0
+                                ? editingProduct.images
+                                : [editingProduct.imageUrl];
+                              setEditingProduct({
+                                ...editingProduct,
+                                images: [...cur, editImageUrlInput.trim()],
+                              });
+                              setEditImageUrlInput('');
+                            }
+                          }}
+                          className="px-3 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-bold rounded-lg cursor-pointer"
+                        >
+                          إضافة
+                        </button>
                       </div>
                     </div>
 
@@ -2556,6 +3006,257 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                           </span>
                         </div>
                       )}
+                    </div>
+
+                    {/* Colors Management for Edited Product */}
+                    <div className="bg-stone-50 p-3 rounded-xl border border-stone-200 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                          <Palette className="w-4 h-4 text-amber-600" />
+                          <span>ألوان القطعة 🎨</span>
+                        </label>
+                        <span className="text-[10px] text-stone-500 font-bold">
+                          المحدد: {editingProduct.colors?.length || 0}
+                        </span>
+                      </div>
+
+                      {/* Active Colors Chips */}
+                      <div className="flex flex-wrap gap-1.5 min-h-[30px] p-1.5 bg-white rounded-lg border border-stone-200">
+                        {editingProduct.colors && editingProduct.colors.length > 0 ? (
+                          editingProduct.colors.map((color) => (
+                            <span
+                              key={color}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-stone-900 text-white rounded-md text-[11px] font-bold"
+                            >
+                              <span>{color}</span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setEditingProduct({
+                                    ...editingProduct,
+                                    colors: (editingProduct.colors || []).filter((c) => c !== color),
+                                  })
+                                }
+                                className="p-0.5 hover:text-rose-300 cursor-pointer"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-[11px] text-stone-400">لا توجد ألوان محددة</span>
+                        )}
+                      </div>
+
+                      {/* Presets */}
+                      <div className="flex flex-wrap gap-1">
+                        {PRESET_COLORS.map((c) => {
+                          const isSel = (editingProduct.colors || []).includes(c);
+                          return (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() => {
+                                const current = editingProduct.colors || [];
+                                const updated = isSel ? current.filter((x) => x !== c) : [...current, c];
+                                setEditingProduct({ ...editingProduct, colors: updated });
+                              }}
+                              className={`px-2 py-0.5 text-[11px] font-bold rounded border cursor-pointer ${
+                                isSel
+                                  ? 'bg-[#34452D] text-white border-[#34452D]'
+                                  : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-100'
+                              }`}
+                            >
+                              {isSel ? `✓ ${c}` : `+ ${c}`}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Custom Color Input */}
+                      <div className="flex gap-1.5 pt-1">
+                        <input
+                          type="text"
+                          value={editCustomColorInput}
+                          onChange={(e) => setEditCustomColorInput(e.target.value)}
+                          placeholder="لون مخصص..."
+                          className="flex-1 px-2.5 py-1 text-xs bg-white border border-stone-200 rounded-lg"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (editCustomColorInput.trim()) {
+                                const current = editingProduct.colors || [];
+                                if (!current.includes(editCustomColorInput.trim())) {
+                                  setEditingProduct({
+                                    ...editingProduct,
+                                    colors: [...current, editCustomColorInput.trim()],
+                                  });
+                                  setEditCustomColorInput('');
+                                }
+                              }
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (editCustomColorInput.trim()) {
+                              const current = editingProduct.colors || [];
+                              if (!current.includes(editCustomColorInput.trim())) {
+                                setEditingProduct({
+                                  ...editingProduct,
+                                  colors: [...current, editCustomColorInput.trim()],
+                                });
+                                setEditCustomColorInput('');
+                              }
+                            }
+                          }}
+                          className="px-2.5 py-1 bg-stone-800 text-white text-xs font-bold rounded-lg cursor-pointer"
+                        >
+                          إضافة
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Sizes Management for Edited Product */}
+                    <div className="bg-stone-50 p-3 rounded-xl border border-stone-200 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                          <Tag className="w-4 h-4 text-blue-600" />
+                          <span>مقاسات القطعة (S, M, L, XL, XXL ...) 📏</span>
+                        </label>
+                        <span className="text-[10px] text-stone-500 font-bold">
+                          المحدد: {editingProduct.sizes?.length || 0}
+                        </span>
+                      </div>
+
+                      {/* Active Sizes Chips */}
+                      <div className="flex flex-wrap gap-1.5 min-h-[30px] p-1.5 bg-white rounded-lg border border-stone-200">
+                        {editingProduct.sizes && editingProduct.sizes.length > 0 ? (
+                          editingProduct.sizes.map((size) => (
+                            <span
+                              key={size}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#34452D] text-white rounded-md text-[11px] font-bold"
+                            >
+                              <span>{size}</span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setEditingProduct({
+                                    ...editingProduct,
+                                    sizes: (editingProduct.sizes || []).filter((s) => s !== size),
+                                  })
+                                }
+                                className="p-0.5 hover:text-rose-300 cursor-pointer"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-[11px] text-stone-400">لا توجد مقاسات محددة</span>
+                        )}
+                      </div>
+
+                      {/* Clothing Size Presets */}
+                      <div className="space-y-1">
+                        <span className="text-[10px] text-stone-500 font-bold block">مقاسات الملابس:</span>
+                        <div className="flex flex-wrap gap-1">
+                          {PRESET_CLOTHING_SIZES.map((s) => {
+                            const isSel = (editingProduct.sizes || []).includes(s);
+                            return (
+                              <button
+                                key={s}
+                                type="button"
+                                onClick={() => {
+                                  const current = editingProduct.sizes || [];
+                                  const updated = isSel ? current.filter((x) => x !== s) : [...current, s];
+                                  setEditingProduct({ ...editingProduct, sizes: updated });
+                                }}
+                                className={`px-2 py-0.5 text-[11px] font-bold rounded border cursor-pointer ${
+                                  isSel
+                                    ? 'bg-[#34452D] text-white border-[#34452D]'
+                                    : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-100'
+                                }`}
+                              >
+                                {isSel ? `✓ ${s}` : `+ ${s}`}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Abaya Size Presets */}
+                      <div className="space-y-1">
+                        <span className="text-[10px] text-stone-500 font-bold block">مقاسات العبايات:</span>
+                        <div className="flex flex-wrap gap-1">
+                          {PRESET_ABAYA_SIZES.map((s) => {
+                            const isSel = (editingProduct.sizes || []).includes(s);
+                            return (
+                              <button
+                                key={s}
+                                type="button"
+                                onClick={() => {
+                                  const current = editingProduct.sizes || [];
+                                  const updated = isSel ? current.filter((x) => x !== s) : [...current, s];
+                                  setEditingProduct({ ...editingProduct, sizes: updated });
+                                }}
+                                className={`px-2 py-0.5 text-[11px] font-bold rounded border cursor-pointer ${
+                                  isSel
+                                    ? 'bg-[#34452D] text-white border-[#34452D]'
+                                    : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-100'
+                                }`}
+                              >
+                                {isSel ? `✓ ${s}` : `+ ${s}`}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Custom Size Input */}
+                      <div className="flex gap-1.5 pt-1">
+                        <input
+                          type="text"
+                          value={editCustomSizeInput}
+                          onChange={(e) => setEditCustomSizeInput(e.target.value)}
+                          placeholder="مقاس مخصص..."
+                          className="flex-1 px-2.5 py-1 text-xs bg-white border border-stone-200 rounded-lg"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (editCustomSizeInput.trim()) {
+                                const current = editingProduct.sizes || [];
+                                if (!current.includes(editCustomSizeInput.trim())) {
+                                  setEditingProduct({
+                                    ...editingProduct,
+                                    sizes: [...current, editCustomSizeInput.trim()],
+                                  });
+                                  setEditCustomSizeInput('');
+                                }
+                              }
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (editCustomSizeInput.trim()) {
+                              const current = editingProduct.sizes || [];
+                              if (!current.includes(editCustomSizeInput.trim())) {
+                                setEditingProduct({
+                                  ...editingProduct,
+                                  sizes: [...current, editCustomSizeInput.trim()],
+                                });
+                                setEditCustomSizeInput('');
+                              }
+                            }
+                          }}
+                          className="px-2.5 py-1 bg-stone-800 text-white text-xs font-bold rounded-lg cursor-pointer"
+                        >
+                          إضافة
+                        </button>
+                      </div>
                     </div>
 
                     <div>

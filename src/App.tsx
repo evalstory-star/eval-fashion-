@@ -19,7 +19,14 @@ import {
 } from './data/initialData';
 import { Product, CartItem, StoreSettings, Review } from './types/store';
 import { ShieldAlert, Sparkles, X, Check, ArrowUpDown, ShoppingBag } from 'lucide-react';
-import { fetchCloudReviews, syncReviewsToCloud } from './services/supabaseSync';
+import {
+  fetchCloudReviews,
+  syncReviewsToCloud,
+  fetchCloudProducts,
+  syncProductsToCloud,
+  OLD_MOCK_PROD_IDS,
+  OLD_MOCK_REV_IDS,
+} from './services/supabaseSync';
 
 export default function App() {
   // Store States with LocalStorage Persistence
@@ -37,7 +44,7 @@ export default function App() {
       const saved = localStorage.getItem('eval_store_products');
       if (saved) {
         const parsed: Product[] = JSON.parse(saved);
-        return parsed.filter((p) => !p.id.startsWith('prod-'));
+        return parsed.filter((p) => !OLD_MOCK_PROD_IDS.has(p.id));
       }
       return [];
     } catch {
@@ -67,12 +74,18 @@ export default function App() {
     }
   });
 
-  // Fetch latest reviews from cloud on mount
+  // Fetch latest reviews and products from cloud on mount
   useEffect(() => {
     fetchCloudReviews().then((cloudReviews) => {
       if (cloudReviews && cloudReviews.length > 0) {
-        const cleanCloud = cloudReviews.filter((r) => !r.id.startsWith('rev-'));
+        const cleanCloud = cloudReviews.filter((r) => !OLD_MOCK_REV_IDS.has(r.id));
         setReviews(cleanCloud);
+      }
+    });
+
+    fetchCloudProducts().then((cloudProducts) => {
+      if (cloudProducts && cloudProducts.length > 0) {
+        setProducts(cloudProducts);
       }
     });
   }, []);
@@ -300,28 +313,42 @@ export default function App() {
   const handleAddProduct = (newProd: Omit<Product, 'id'>) => {
     const created: Product = {
       ...newProd,
-      id: `prod-${Date.now()}`,
+      id: `eval_prod_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     };
-    setProducts((prev) => [created, ...prev]);
-    showToast('تمت إضافة المنتج الجديد بنجاح');
+    setProducts((prev) => {
+      const updated = [created, ...prev];
+      syncProductsToCloud(updated);
+      return updated;
+    });
+    showToast('تمت إضافة المنتج الجديد وحفظه سحابياً بنجاح');
   };
 
   const handleToggleProduct = (id: string) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, isAvailable: !p.isAvailable } : p))
-    );
+    setProducts((prev) => {
+      const updated = prev.map((p) => (p.id === id ? { ...p, isAvailable: !p.isAvailable } : p));
+      syncProductsToCloud(updated);
+      return updated;
+    });
     showToast('تم تحديث حالة المنتج');
   };
 
   const handleDeleteProduct = (id: string) => {
     if (window.confirm('هل أنتِ متأكدة من حذف هذا المنتج نهائياً؟')) {
-      setProducts((prev) => prev.filter((p) => p.id !== id));
+      setProducts((prev) => {
+        const updated = prev.filter((p) => p.id !== id);
+        syncProductsToCloud(updated);
+        return updated;
+      });
       showToast('تم حذف المنتج');
     }
   };
 
   const handleUpdateProduct = (updatedProd: Product) => {
-    setProducts((prev) => prev.map((p) => (p.id === updatedProd.id ? updatedProd : p)));
+    setProducts((prev) => {
+      const updated = prev.map((p) => (p.id === updatedProd.id ? updatedProd : p));
+      syncProductsToCloud(updated);
+      return updated;
+    });
     if (selectedProduct && selectedProduct.id === updatedProd.id) {
       setSelectedProduct(updatedProd);
     }
